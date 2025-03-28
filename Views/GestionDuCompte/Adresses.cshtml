@@ -1,0 +1,166 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Mes adresses";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Menu latéral -->
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="text-center mb-3">
+                        <div class="position-relative d-inline-block">
+                            <img src="~/images/membre1.jpg" class="rounded-circle" alt="Photo de profil" style="width: 100px; height: 100px; object-fit: cover;">
+                            <button class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle p-2">
+                                <i class="bi bi-camera"></i>
+                            </button>
+                        </div>
+                        <h5 class="mt-3 mb-1">John Doe</h5>
+                        <p class="text-muted small">john.doe@example.com</p>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/GestionDuCompte/Infospersonnelles" class="list-group-item list-group-item-action">
+                            <i class="bi bi-person me-2"></i>Informations personnelles
+                        </a>
+                        <a href="/GestionDuCompte/Commandes" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bag me-2"></i>Mes commandes
+                        </a>
+                        <a href="/GestionDuCompte/Adresses" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-geo-alt me-2"></i>Mes adresses
+                        </a>
+                        <a href="/GestionDuCompte/Securite" class="list-group-item list-group-item-action">
+                            <i class="bi bi-shield-lock me-2"></i>Sécurité
+                        </a>
+                        <a asp-controller="GestionDuCompte" asp-action="Deconnexion" class="list-group-item list-group-item-action text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">Mes adresses</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                            <i class="bi bi-plus-lg me-2"></i>Ajouter une adresse
+                        </button>
+                    </div>
+
+                    <!-- Liste des adresses -->
+                    <div class="row g-4">
+                        <!-- Adresse principale -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h5 class="card-title mb-1">Adresse principale</h5>
+                                            <span class="badge bg-primary">Principal</span>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Modifier</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-trash me-2"></i>Supprimer</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mb-0">
+                                        John Doe<br>
+                                        123 Rue Example<br>
+                                        75001 Paris<br>
+                                        France
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Adresse secondaire -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h5 class="card-title mb-1">Adresse secondaire</h5>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Modifier</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-trash me-2"></i>Supprimer</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mb-0">
+                                        John Doe<br>
+                                        456 Avenue Example<br>
+                                        75002 Paris<br>
+                                        France
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter une adresse -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter une adresse</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="nomAdresse" class="form-label">Nom de l'adresse</label>
+                        <input type="text" class="form-control" id="nomAdresse" placeholder="Ex: Maison, Bureau">
+                    </div>
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <input type="text" class="form-control" id="adresse" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ville" class="form-label">Ville</label>
+                        <input type="text" class="form-control" id="ville" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codePostal" class="form-label">Code postal</label>
+                        <input type="text" class="form-control" id="codePostal" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pays" class="form-label">Pays</label>
+                        <input type="text" class="form-control" id="pays" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="adressePrincipale">
+                            <label class="form-check-label" for="adressePrincipale">Définir comme adresse principale</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>

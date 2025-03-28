@@ -8,5 +8,15 @@ namespace BoutiqueEnLigne.Controllers
         {
             return View();
         }
+
+        public IActionResult Panier()
+        {
+            return View();
+        }
+
+        public IActionResult Paiement()
+        {
+            return View();
+        }
     }
 }

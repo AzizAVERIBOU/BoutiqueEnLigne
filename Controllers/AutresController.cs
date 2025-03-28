@@ -8,5 +8,15 @@ namespace BoutiqueEnLigne.Controllers
         {
             return View();
         }
+
+        public IActionResult APropos()
+        {
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
     }
 }

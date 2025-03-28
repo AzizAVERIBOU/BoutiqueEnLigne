@@ -1,0 +1,200 @@
+﻿@{
+    Layout = "_Layout";
+    ViewBag.Title = "Sécurité";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Menu latéral -->
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="text-center mb-3">
+                        <div class="position-relative d-inline-block">
+                            <img src="~/images/membre1.jpg" class="rounded-circle" alt="Photo de profil" style="width: 100px; height: 100px; object-fit: cover;">
+                            <button class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle p-2">
+                                <i class="bi bi-camera"></i>
+                            </button>
+                        </div>
+                        <h5 class="mt-3 mb-1">John Doe</h5>
+                        <p class="text-muted small">john.doe@example.com</p>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/GestionDuCompte/Infospersonnelles" class="list-group-item list-group-item-action">
+                            <i class="bi bi-person me-2"></i>Informations personnelles
+                        </a>
+                        <a href="/GestionDuCompte/Commandes" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bag me-2"></i>Mes commandes
+                        </a>
+                        <a href="/GestionDuCompte/Adresses" class="list-group-item list-group-item-action">
+                            <i class="bi bi-geo-alt me-2"></i>Mes adresses
+                        </a>
+                        <a href="/GestionDuCompte/Securite" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-shield-lock me-2"></i>Sécurité
+                        </a>
+                        <a asp-controller="GestionDuCompte" asp-action="Deconnexion" class="list-group-item list-group-item-action text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-4">Sécurité du compte</h2>
+
+                    <!-- Mot de passe -->
+                    <div class="card border mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">Mot de passe</h5>
+                                    <p class="text-muted small mb-0">Dernière modification : il y a 3 mois</p>
+                                </div>
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <i class="bi bi-pencil me-2"></i>Modifier
+                                </button>
+                            </div>
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Assurez-vous que votre mot de passe est fort et unique.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentification à deux facteurs -->
+                    <div class="card border mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">Authentification à deux facteurs</h5>
+                                    <p class="text-muted small mb-0">Ajoutez une couche de sécurité supplémentaire</p>
+                                </div>
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#twoFactorModal">
+                                    <i class="bi bi-shield-check me-2"></i>Activer
+                                </button>
+                            </div>
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                L'authentification à deux facteurs n'est pas activée sur votre compte.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appareils connectés -->
+                    <div class="card border">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">Appareils connectés</h5>
+                                    <p class="text-muted small mb-0">Gérez vos appareils connectés</p>
+                                </div>
+                                <button class="btn btn-outline-primary">
+                                    <i class="bi bi-list me-2"></i>Voir tous
+                                </button>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-laptop text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Ordinateur portable</h6>
+                                            <small class="text-muted">Dernière connexion : Il y a 2 heures</small>
+                                        </div>
+                                        <button class="btn btn-link text-danger p-0">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-phone text-primary me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">iPhone 12</h6>
+                                            <small class="text-muted">Dernière connexion : Il y a 1 jour</small>
+                                        </div>
+                                        <button class="btn btn-link text-danger p-0">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Changer le mot de passe -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Changer le mot de passe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Mot de passe actuel</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Nouveau mot de passe</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">Confirmer le nouveau mot de passe</label>
+                        <input type="password" class="form-control" id="confirmNewPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Authentification à deux facteurs -->
+<div class="modal fade" id="twoFactorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Activer l'authentification à deux facteurs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Pour activer l'authentification à deux facteurs, vous devrez installer une application d'authentification sur votre téléphone.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Choisissez votre méthode d'authentification</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="authMethod" id="appAuth" checked>
+                        <label class="form-check-label" for="appAuth">
+                            Application d'authentification (Google Authenticator, Authy, etc.)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="authMethod" id="smsAuth">
+                        <label class="form-check-label" for="smsAuth">
+                            SMS
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Continuer</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+.search-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.input-group {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.form-control {
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    box-shadow: none;
+}
+
+.btn-search {
+    border: none;
+    padding: 0.75rem 1.5rem;
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-search:hover {
+    background-color: #0b5ed7;
+} 
