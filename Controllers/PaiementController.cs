@@ -11,11 +11,38 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Panier()
         {
+            // Vérifier si l'utilisateur est connecté
+            if (!GestionDuCompteController.isLoggedIn)
+            {
+                return RedirectToAction("Connexion", "GestionDuCompte");
+            }
             return View();
         }
 
         public IActionResult Paiement()
         {
+            // Vérifier si l'utilisateur est connecté
+            if (!GestionDuCompteController.isLoggedIn)
+            {
+                return RedirectToAction("Connexion", "GestionDuCompte");
+            }
+            return View();
+        }
+        public IActionResult Validation()
+        {
+            if (!GestionDuCompteController.isLoggedIn)
+            {
+                return RedirectToAction("Connexion", "GestionDuCompte");
+            }
+            return View();
+        }
+
+        public IActionResult Factures()
+        {
+            if (!GestionDuCompteController.isLoggedIn)
+            {
+                return RedirectToAction("Connexion", "GestionDuCompte");
+            }
             return View();
         }
     }

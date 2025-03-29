@@ -1,5 +1,173 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "_Layout";
+    ViewBag.Title = "Validation du paiement";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Validation du paiement</h1>
+                <a asp-controller="Paiement" asp-action="Paiement" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour au paiement
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Récapitulatif -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Récapitulatif de la commande</h5>
+
+                    <!-- Informations de paiement -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Mode de paiement</h6>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-credit-card text-primary me-2"></i>
+                            <span>Carte bancaire</span>
+                        </div>
+                        <div class="text-muted small mt-1">**** **** **** 3456</div>
+                    </div>
+
+                    <!-- Adresse de facturation -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Adresse de facturation</h6>
+                        <div class="text-muted">
+                            <div>John Doe</div>
+                            <div>123 rue Example</div>
+                            <div>75000 Paris</div>
+                        </div>
+                    </div>
+
+                    <!-- Produits -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Produits commandés</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="~/images/produit1.jpg" alt="Produit 1" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div>Nom du produit 1</div>
+                                <div class="text-muted small">1 x 49.99 €</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="~/images/produit2.jpg" alt="Produit 2" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div>Nom du produit 2</div>
+                                <div class="text-muted small">2 x 79.99 €</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <img src="~/images/produit3.jpg" alt="Produit 3" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div>Nom du produit 3</div>
+                                <div class="text-muted small">1 x 29.99 €</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sous-total</span>
+                            <span>159.97 €</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Livraison</span>
+                            <span>Gratuit</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Taxes</span>
+                            <span>31.99 €</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <strong class="text-primary">191.96 €</strong>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation -->
+                    <div class="form-check mt-4 mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmation" required>
+                        <label class="form-check-label" for="confirmation">
+                            Je confirme que toutes les informations sont correctes et j'accepte les <a href="#" class="text-decoration-none">conditions générales</a>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary w-100" id="confirmButton" disabled>
+                        <i class="bi bi-check-circle me-2"></i>Confirmer la commande
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sécurité -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Sécurité</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-shield-check text-primary me-2"></i>
+                        <span>Paiement sécurisé SSL</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-lock text-primary me-2"></i>
+                        <span>Données cryptées</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-lock text-primary me-2"></i>
+                        <span>Protection contre la fraude</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmation du paiement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="mb-3">Paiement réussi !</h4>
+                <p class="mb-4">Votre commande a été validée avec succès. Vous recevrez un email de confirmation dans quelques instants.</p>
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Factures", "Paiement")" class="btn btn-primary">
+                        <i class="bi bi-receipt me-2"></i>Voir mes factures
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary">
+                        <i class="bi bi-house me-2"></i>Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmationCheckbox = document.getElementById('confirmation');
+            const confirmButton = document.getElementById('confirmButton');
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+
+            confirmationCheckbox.addEventListener('change', function() {
+                confirmButton.disabled = !this.checked;
+            });
+
+            confirmButton.addEventListener('click', function() {
+                confirmationModal.show();
+            });
+        });
+    </script>
 }
