@@ -12,7 +12,7 @@ namespace BoutiqueEnLigne.Controllers
         public IActionResult Panier()
         {
             // Vérifier si l'utilisateur est connecté
-            if (!GestionDuCompteController.isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion", "GestionDuCompte");
             }
@@ -22,15 +22,16 @@ namespace BoutiqueEnLigne.Controllers
         public IActionResult Paiement()
         {
             // Vérifier si l'utilisateur est connecté
-            if (!GestionDuCompteController.isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion", "GestionDuCompte");
             }
             return View();
         }
+
         public IActionResult Validation()
         {
-            if (!GestionDuCompteController.isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion", "GestionDuCompte");
             }
@@ -39,7 +40,7 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Factures()
         {
-            if (!GestionDuCompteController.isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion", "GestionDuCompte");
             }

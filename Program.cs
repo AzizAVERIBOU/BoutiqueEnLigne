@@ -1,16 +1,51 @@
-//using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using BoutiqueEnLigne.Models;
+using BoutiqueEnLigne.Models.User;
+using BoutiqueEnLigne.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
+builder.Services.AddControllersWithViews();
+
+// Configuration de la session
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Configuration de la base de données
+builder.Services.AddDbContext<BoutiqueEnLigneContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+// En développement, on désactive temporairement la redirection HTTPS
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
- 
-app.UseMvc(routes => routes.MapRoute(
+app.UseSession();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
     name: "default",
-    template: "{controller=Accueil}/{action=Accueil}/{id?}"));
+    pattern: "{controller=Accueil}/{action=Index}/{id?}");
 
 app.Run();

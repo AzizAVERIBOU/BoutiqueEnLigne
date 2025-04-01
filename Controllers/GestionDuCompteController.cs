@@ -1,26 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BoutiqueEnLigne.Models;
+using BoutiqueEnLigne.Models.User;
+using BoutiqueEnLigne.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoutiqueEnLigne.Controllers
 {
     public class GestionDuCompteController : Controller
     {
-        // Utilisateur par défaut pour les tests
-        private static readonly User DefaultUser = new User
-        {
-            Id = 1,
-            Nom = "User",
-            Email = "user@test.com",
-            MotDePasse = "password123",
-            Photo = "~/images/membre1.jpg"
-        };
+        private readonly BoutiqueEnLigneContext _context;
 
-        // Variable statique pour simuler l'état de connexion
-        public static bool isLoggedIn = false;
+        public GestionDuCompteController(BoutiqueEnLigneContext context)
+        {
+            _context = context;
+        }
 
         public IActionResult Index()
         {
-            if (!isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion");
             }
@@ -35,9 +32,11 @@ namespace BoutiqueEnLigne.Controllers
         [HttpPost]
         public IActionResult Connexion(string email, string motDePasse)
         {
-            if (email == DefaultUser.Email && motDePasse == DefaultUser.MotDePasse)
+            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.MotDePasse == motDePasse);
+            
+            if (user != null)
             {
-                isLoggedIn = true;
+                HttpContext.Session.SetInt32("UserId", user.Id);
                 return RedirectToAction("Infospersonnelles");
             }
             
@@ -50,18 +49,86 @@ namespace BoutiqueEnLigne.Controllers
             return View();
         }
 
+        [HttpPost]
+        public IActionResult Inscription(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Vérifier si l'email existe déjà
+                    if (_context.Users.Any(u => u.Email == user.Email))
+                    {
+                        ModelState.AddModelError("Email", "Cet email est déjà utilisé");
+                        return View(user);
+                    }
+
+                    // Ajouter l'utilisateur à la base de données
+                    _context.Users.Add(user);
+                    _context.SaveChanges();
+
+                    // Connecter l'utilisateur
+                    HttpContext.Session.SetInt32("UserId", user.Id);
+                    return RedirectToAction("Infospersonnelles");
+                }
+                catch (Exception ex)
+                {
+                    // Log l'erreur
+                    ModelState.AddModelError("", "Une erreur est survenue lors de l'inscription. Veuillez réessayer.");
+                    return View(user);
+                }
+            }
+
+            return View(user);
+        }
+
         public IActionResult Infospersonnelles()
         {
-            if (!isLoggedIn)
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
             {
                 return RedirectToAction("Connexion");
             }
-            return View(DefaultUser);
+
+            var user = _context.Users.Find(userId.Value);
+            if (user == null)
+            {
+                return RedirectToAction("Connexion");
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public IActionResult Infospersonnelles(User user)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                return RedirectToAction("Connexion");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingUser = _context.Users.Find(userId.Value);
+                if (existingUser != null)
+                {
+                    existingUser.Nom = user.Nom;
+                    existingUser.Prenom = user.Prenom;
+                    existingUser.Email = user.Email;
+
+                    _context.SaveChanges();
+                    TempData["Message"] = "Vos informations ont été mises à jour avec succès.";
+                    return RedirectToAction(nameof(Infospersonnelles));
+                }
+            }
+
+            return View(user);
         }
 
         public IActionResult Commandes()
         {
-            if (!isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion");
             }
@@ -70,7 +137,7 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Adresses()
         {
-            if (!isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion");
             }
@@ -79,7 +146,7 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Securite()
         {
-            if (!isLoggedIn)
+            if (!HttpContext.Session.GetInt32("UserId").HasValue)
             {
                 return RedirectToAction("Connexion");
             }
@@ -88,7 +155,7 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Deconnexion()
         {
-            isLoggedIn = false;
+            HttpContext.Session.Remove("UserId");
             return RedirectToAction("Index", "Accueil");
         }
     }
