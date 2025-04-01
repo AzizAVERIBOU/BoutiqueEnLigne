@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using BoutiqueEnLigne.Models;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
+using BoutiqueEnLigne.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,10 @@ builder.Services.AddSession(options =>
 // Configuration de la base de données
 builder.Services.AddDbContext<BoutiqueEnLigneContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Enregistrement des services API
+builder.Services.AddHttpClient<UserApiService>();
+builder.Services.AddHttpClient<ProductApiService>();
 
 var app = builder.Build();
 

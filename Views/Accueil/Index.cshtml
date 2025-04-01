@@ -2,18 +2,32 @@
 
 @{
     Layout = "_Layout";
-    ViewBag.Title = "Accueil";
+    ViewData["Title"] = "Accueil";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="display-4 fw-bold text-primary mb-4">Bienvenue sur A&M Store</h1>
-            <p class="lead text-muted">
-                Découvrez notre sélection de produits exceptionnels <br>
-                A&M Store priorise la qualité et le service. <br>
-                votre satisfaction, notre objectif a toute épreuve.
-            </p>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Contenu principal -->
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h1 class="display-4 mb-4">Bienvenue sur BoutiqueEnLigne</h1>
+                <p class="lead">Découvrez notre sélection de produits exceptionnels</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">À propos de notre boutique</h5>
+                            <p class="card-text">
+                                BoutiqueEnLigne est votre destination de confiance pour tous vos achats en ligne.
+                                Nous vous proposons une large sélection de produits de qualité, des prix compétitifs
+                                et un service client exceptionnel.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
