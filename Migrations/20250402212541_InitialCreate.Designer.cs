@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoutiqueEnLigne.Migrations
 {
     [DbContext(typeof(BoutiqueEnLigneContext))]
-    [Migration("20250402203206_UpdateUserModels")]
-    partial class UpdateUserModels
+    [Migration("20250402212541_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,7 +66,7 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.HasIndex("VendeurId");
 
-                    b.ToTable("ClientVendeurs");
+                    b.ToTable("ClientVendeur");
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.Commande", b =>
@@ -301,36 +301,39 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Address", b =>
                 {
                     b.Property<int>("AddressId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressId"));
 
                     b.Property<string>("Address1")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "street");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "city");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("CoordinatesId")
                         .HasColumnType("int");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "postalCode");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "state");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("AddressId");
 
-                    b.HasIndex("CoordinatesId")
-                        .IsUnique()
-                        .HasFilter("[CoordinatesId] IS NOT NULL");
+                    b.HasIndex("CoordinatesId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Addresses");
 
@@ -403,9 +406,7 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.HasKey("CompanyId");
 
-                    b.HasIndex("AddressId")
-                        .IsUnique()
-                        .HasFilter("[AddressId] IS NOT NULL");
+                    b.HasIndex("AddressId");
 
                     b.ToTable("Companies");
                 });
@@ -429,8 +430,6 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasKey("CoordinatesId");
 
                     b.ToTable("Coordinates");
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "coordinates");
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.User", b =>
@@ -487,6 +486,10 @@ namespace BoutiqueEnLigne.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<string>("SiteWeb")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -530,10 +533,6 @@ namespace BoutiqueEnLigne.Migrations
                     b.Property<int>("NumeroVendeur")
                         .HasColumnType("int");
 
-                    b.Property<string>("SiteWeb")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasDiscriminator().HasValue("Vendeur");
                 });
 
@@ -542,13 +541,13 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany("ClientVendeurs")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany("ClientVendeurs")
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -561,13 +560,13 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany("Commandes")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany("Commandes")
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -580,19 +579,19 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Commande", "Commande")
                         .WithOne("Facture")
                         .HasForeignKey("BoutiqueEnLigne.Models.Facture", "CommandeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany()
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -607,7 +606,7 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithOne("Panier")
                         .HasForeignKey("BoutiqueEnLigne.Models.Panier", "ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -617,15 +616,18 @@ namespace BoutiqueEnLigne.Migrations
                 {
                     b.HasOne("BoutiqueEnLigne.Models.Client", "ClientAchat")
                         .WithMany("ProduitsAchat")
-                        .HasForeignKey("ClientAchatId");
+                        .HasForeignKey("ClientAchatId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BoutiqueEnLigne.Models.Client", "ClientFavori")
                         .WithMany("ProduitsFavoris")
-                        .HasForeignKey("ClientFavoriId");
+                        .HasForeignKey("ClientFavoriId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany("Produits")
-                        .HasForeignKey("ClientId");
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BoutiqueEnLigne.Models.Commande", null)
                         .WithMany("Produits")
@@ -642,7 +644,7 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany("ProduitsVendus")
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -656,18 +658,19 @@ namespace BoutiqueEnLigne.Migrations
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Address", b =>
                 {
-                    b.HasOne("BoutiqueEnLigne.Models.User.User", null)
+                    b.HasOne("BoutiqueEnLigne.Models.User.Coordinates", "Coordinates")
+                        .WithMany()
+                        .HasForeignKey("CoordinatesId");
+
+                    b.HasOne("BoutiqueEnLigne.Models.User.User", "User")
                         .WithOne("Address")
-                        .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "AddressId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BoutiqueEnLigne.Models.User.Coordinates", "Coordinates")
-                        .WithOne()
-                        .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "CoordinatesId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("Coordinates");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Bank", b =>
@@ -675,21 +678,20 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.User.User", null)
                         .WithOne("Bank")
                         .HasForeignKey("BoutiqueEnLigne.Models.User.Bank", "BankId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Company", b =>
                 {
                     b.HasOne("BoutiqueEnLigne.Models.User.Address", "Address")
-                        .WithOne()
-                        .HasForeignKey("BoutiqueEnLigne.Models.User.Company", "AddressId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .WithMany()
+                        .HasForeignKey("AddressId");
 
                     b.HasOne("BoutiqueEnLigne.Models.User.User", null)
                         .WithOne("Company")
                         .HasForeignKey("BoutiqueEnLigne.Models.User.Company", "CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Address");

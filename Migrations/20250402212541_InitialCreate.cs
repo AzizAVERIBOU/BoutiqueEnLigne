@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BoutiqueEnLigne.Migrations
 {
     /// <inheritdoc />
-    public partial class Mesmigrations : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,13 +58,13 @@ namespace BoutiqueEnLigne.Migrations
                     NotificationsEmail = table.Column<bool>(type: "bit", nullable: false),
                     InscritNewsletter = table.Column<bool>(type: "bit", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SiteWeb = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Discriminator = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     NumeroClient = table.Column<int>(type: "int", nullable: true),
                     NumeroVendeur = table.Column<int>(type: "int", nullable: true),
                     NomEntreprise = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     NumeroSIRET = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DescriptionEntreprise = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    SiteWeb = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    DescriptionEntreprise = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,12 +75,14 @@ namespace BoutiqueEnLigne.Migrations
                 name: "Addresses",
                 columns: table => new
                 {
-                    AddressId = table.Column<int>(type: "int", nullable: false),
-                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Address1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CoordinatesId = table.Column<int>(type: "int", nullable: true),
                     PostalCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    State = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CoordinatesId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,10 +93,11 @@ namespace BoutiqueEnLigne.Migrations
                         principalTable: "Coordinates",
                         principalColumn: "CoordinatesId");
                     table.ForeignKey(
-                        name: "FK_Addresses_Users_AddressId",
-                        column: x => x.AddressId,
+                        name: "FK_Addresses_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -106,7 +109,8 @@ namespace BoutiqueEnLigne.Migrations
                     CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CardType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Iban = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Iban = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -115,11 +119,12 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Banks_Users_BankId",
                         column: x => x.BankId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ClientVendeurs",
+                name: "ClientVendeur",
                 columns: table => new
                 {
                     ClientId = table.Column<int>(type: "int", nullable: false),
@@ -127,17 +132,19 @@ namespace BoutiqueEnLigne.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClientVendeurs", x => new { x.ClientId, x.VendeurId });
+                    table.PrimaryKey("PK_ClientVendeur", x => new { x.ClientId, x.VendeurId });
                     table.ForeignKey(
-                        name: "FK_ClientVendeurs_Users_ClientId",
+                        name: "FK_ClientVendeur_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ClientVendeurs_Users_VendeurId",
+                        name: "FK_ClientVendeur_Users_VendeurId",
                         column: x => x.VendeurId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -160,12 +167,14 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Commandes_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Commandes_Users_VendeurId",
                         column: x => x.VendeurId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -187,7 +196,8 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Paniers_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -212,7 +222,8 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Companies_Users_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -238,17 +249,20 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Factures_Commandes_CommandeId",
                         column: x => x.CommandeId,
                         principalTable: "Commandes",
-                        principalColumn: "CommandeId");
+                        principalColumn: "CommandeId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Factures_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Factures_Users_VendeurId",
                         column: x => x.VendeurId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -300,35 +314,42 @@ namespace BoutiqueEnLigne.Migrations
                         name: "FK_Products_Users_ClientAchatId",
                         column: x => x.ClientAchatId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Products_Users_ClientFavoriId",
                         column: x => x.ClientFavoriId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Products_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Products_Users_VendeurId",
                         column: x => x.VendeurId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Addresses_CoordinatesId",
                 table: "Addresses",
-                column: "CoordinatesId",
-                unique: true,
-                filter: "[CoordinatesId] IS NOT NULL");
+                column: "CoordinatesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClientVendeurs_VendeurId",
-                table: "ClientVendeurs",
+                name: "IX_Addresses_UserId",
+                table: "Addresses",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClientVendeur_VendeurId",
+                table: "ClientVendeur",
                 column: "VendeurId");
 
             migrationBuilder.CreateIndex(
@@ -344,9 +365,7 @@ namespace BoutiqueEnLigne.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Companies_AddressId",
                 table: "Companies",
-                column: "AddressId",
-                unique: true,
-                filter: "[AddressId] IS NOT NULL");
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Factures_ClientId",
@@ -422,7 +441,7 @@ namespace BoutiqueEnLigne.Migrations
                 name: "CartesDeCredit");
 
             migrationBuilder.DropTable(
-                name: "ClientVendeurs");
+                name: "ClientVendeur");
 
             migrationBuilder.DropTable(
                 name: "Companies");

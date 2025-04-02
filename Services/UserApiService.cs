@@ -108,12 +108,12 @@ namespace BoutiqueEnLigne.Services
 
                     var address = new Address
                     {
-                        AddressId = newUser.Id,  // Utiliser l'ID de l'utilisateur comme clé étrangère
                         Address1 = apiUser.Address.Address1 ?? "Adresse non spécifiée",
                         City = apiUser.Address.City ?? "Ville non spécifiée",
                         PostalCode = apiUser.Address.PostalCode ?? "00000",
                         State = apiUser.Address.State ?? "État non spécifié",
-                        Coordinates = coordinates
+                        Coordinates = coordinates,
+                        UserId = newUser.Id
                     };
                     _context.Addresses.Add(address);
                     await _context.SaveChangesAsync();
@@ -125,11 +125,11 @@ namespace BoutiqueEnLigne.Services
                     // Créer une adresse par défaut
                     var address = new Address
                     {
-                        AddressId = newUser.Id,
                         Address1 = "Adresse non spécifiée",
                         City = "Ville non spécifiée",
                         PostalCode = "00000",
-                        State = "État non spécifié"
+                        State = "État non spécifié",
+                        UserId = newUser.Id
                     };
                     _context.Addresses.Add(address);
                     await _context.SaveChangesAsync();

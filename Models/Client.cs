@@ -9,7 +9,7 @@ namespace BoutiqueEnLigne.Models
         public int NumeroClient { get; set; }
 
         [Display(Name = "Commandes")] // Affiche le nom des commandes dans le formulaire 
-        public List<Commande> Commandes { get; set; }
+        public new virtual ICollection<Commande> Commandes { get; set; }
 
         [Display(Name = "Relations Client-Vendeur")] // Affiche le nom des relations client-vendeur dans le formulaire 
         public List<ClientVendeur> ClientVendeurs { get; set; }

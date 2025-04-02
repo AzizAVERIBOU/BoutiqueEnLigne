@@ -20,7 +20,7 @@ namespace BoutiqueEnLigne.Models
         public List<ClientVendeur> ClientVendeurs { get; set; }
 
         [Display(Name = "Commandes")] // Affiche le nom des commandes dans le formulaire 
-        public List<Commande> Commandes { get; set; }
+        public new virtual ICollection<Commande> Commandes { get; set; }
 
         [Display(Name = "SIRET")] // Affiche le nom du numéro SIRET dans le formulaire 
         [RegularExpression(@"^\d{14}$", ErrorMessage = "Le numéro SIRET doit contenir 14 chiffres")] // Message d'erreur si le numéro SIRET n'est pas composé de 14 chiffres

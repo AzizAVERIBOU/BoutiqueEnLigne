@@ -51,13 +51,13 @@ namespace BoutiqueEnLigne.Models.User
         public string Image { get; set; }
 
         [Display(Name = "Site web")]
-        public string SiteWeb { get; set; }
+        public string? SiteWeb { get; set; }
 
-        // Navigation properties
-        public Address Address { get; set; }
-        public Bank Bank { get; set; }
-        public Company Company { get; set; }
-        public ICollection<Commande> Commandes { get; set; }
+        // Propriétés de navigation
+        public virtual Address Address { get; set; }
+        public virtual Bank Bank { get; set; }
+        public virtual Company Company { get; set; }
+        public virtual ICollection<Commande> Commandes { get; set; }
     }
 
     public enum RoleUtilisateur
