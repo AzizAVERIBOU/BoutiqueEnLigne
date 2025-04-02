@@ -7,9 +7,11 @@ using BoutiqueEnLigne.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BoutiqueEnLigne.Controllers
 {
+    [Authorize]
     public class GestionDuCompteController : Controller
     {
         private readonly BoutiqueEnLigneContext _context;
@@ -23,19 +25,17 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Index()
         {
-            if (!HttpContext.Session.GetInt32("UserId").HasValue)
-            {
-                return RedirectToAction("Connexion");
-            }
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Connexion()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Connexion(string email, string motDePasse)
         {
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(motDePasse))
@@ -73,12 +73,14 @@ namespace BoutiqueEnLigne.Controllers
             return RedirectToAction("Infospersonnelles");
         }
 
+        [AllowAnonymous]
         public IActionResult Inscription()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Inscription(User user)
         {
             if (ModelState.IsValid)
@@ -97,12 +99,29 @@ namespace BoutiqueEnLigne.Controllers
                     _context.SaveChanges();
 
                     // Connecter l'utilisateur
-                    HttpContext.Session.SetInt32("UserId", user.Id);
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.Name, user.Email),
+                        new Claim(ClaimTypes.Role, user.Role.ToString()),
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var authProperties = new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                    };
+
+                    HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        authProperties).Wait();
+
                     return RedirectToAction("Infospersonnelles");
                 }
                 catch (Exception ex)
                 {
-                    // Log l'erreur
                     ModelState.AddModelError("", "Une erreur est survenue lors de l'inscription. Veuillez réessayer.");
                     return View(user);
                 }
@@ -113,14 +132,13 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Infospersonnelles()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Connexion");
             }
 
-            var userId = int.Parse(userIdClaim.Value);
-            var user = _context.Users.Find(userId);
+            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == userId);
             if (user == null)
             {
                 return RedirectToAction("Connexion");
@@ -159,28 +177,92 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Commandes()
         {
-            if (!HttpContext.Session.GetInt32("UserId").HasValue)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Connexion");
             }
+
+            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            if (user == null)
+            {
+                return RedirectToAction("Connexion");
+            }
+
             return View();
         }
 
-        public IActionResult Adresses()
+        public async Task<IActionResult> Adresses()
         {
-            if (!HttpContext.Session.GetInt32("UserId").HasValue)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Connexion");
             }
-            return View();
+
+            var user = await _context.Users
+                .Include(u => u.Address)
+                    .ThenInclude(a => a.Coordinates)
+                .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            if (user == null)
+            {
+                return RedirectToAction("Connexion");
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Adresses(Address address)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Connexion");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var user = await _context.Users
+                    .Include(u => u.Address)
+                    .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+                if (user != null)
+                {
+                    if (user.Address == null)
+                    {
+                        // Créer une nouvelle adresse
+                        address.UserId = user.Id;
+                        _context.Addresses.Add(address);
+                    }
+                    else
+                    {
+                        // Mettre à jour l'adresse existante
+                        user.Address.Address1 = address.Address1;
+                        user.Address.City = address.City;
+                        user.Address.PostalCode = address.PostalCode;
+                        user.Address.State = address.State;
+                        _context.Addresses.Update(user.Address);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    TempData["Message"] = "Votre adresse a été mise à jour avec succès.";
+                    return RedirectToAction(nameof(Adresses));
+                }
+            }
+
+            // En cas d'erreur, récupérer l'utilisateur complet pour la vue
+            var userWithAddress = await _context.Users
+                .Include(u => u.Address)
+                    .ThenInclude(a => a.Coordinates)
+                .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            return View(userWithAddress);
         }
 
         public IActionResult Securite()
         {
-            if (!HttpContext.Session.GetInt32("UserId").HasValue)
-            {
-                return RedirectToAction("Connexion");
-            }
             return View();
         }
 

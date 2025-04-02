@@ -8,27 +8,33 @@ namespace BoutiqueEnLigne.Models.User
         [Key]
         public int BankId { get; set; }
 
-        [JsonPropertyName("cardExpire")] // Date d'expiration dans la base de données
-        [Display(Name = "Date d'expiration")] // Affiche le nom de la date d'expiration dans le formulaire 
-        [RegularExpression(@"^(0[1-9]|1[0-2])\/([0-9]{2})$", ErrorMessage = "Format invalide. Utilisez MM/YY")] // Format de la date d'expiration
+        [JsonPropertyName("cardExpire")]
+        [Display(Name = "Date d'expiration")]
+        [Required(ErrorMessage = "La date d'expiration est requise")]
         public string CardExpire { get; set; }
 
-        [JsonPropertyName("cardNumber")] // Numéro de carte dans la base de données
-        [Display(Name = "Numéro de carte")] // Affiche le nom du numéro de carte dans le formulaire 
-        [RegularExpression(@"^\d{16}$", ErrorMessage = "Le numéro de carte doit contenir 16 chiffres")] // Format du numéro de carte
+        [JsonPropertyName("cardNumber")]
+        [Display(Name = "Numéro de carte")]
+        [Required(ErrorMessage = "Le numéro de carte est requis")]
         public string CardNumber { get; set; }
 
-        [JsonPropertyName("cardType")] // Type de carte dans la base de données
-        [Display(Name = "Type de carte")] // Affiche le nom du type de carte dans le formulaire 
+        [JsonPropertyName("cardType")]
+        [Display(Name = "Type de carte")]
+        [Required(ErrorMessage = "Le type de carte est requis")]
         public string CardType { get; set; }
 
-        [JsonPropertyName("currency")] // Devise dans la base de données
-        [Display(Name = "Devise")] // Affiche le nom de la devise dans le formulaire 
+        [JsonPropertyName("currency")]
+        [Display(Name = "Devise")]
+        [Required(ErrorMessage = "La devise est requise")]
         public string Currency { get; set; }
 
-        [JsonPropertyName("iban")] // IBAN dans la base de données  
-        [Display(Name = "IBAN")] // Affiche le nom de l'IBAN dans le formulaire 
-        [RegularExpression(@"^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$", ErrorMessage = "Format IBAN invalide")] // Format de l'IBAN
+        [JsonPropertyName("iban")]
+        [Display(Name = "IBAN")]
+        [Required(ErrorMessage = "L'IBAN est requis")]
+        [RegularExpression(@"^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$", ErrorMessage = "Format IBAN invalide")]
         public string Iban { get; set; }
+
+        [JsonPropertyName("bankName")]
+        public string BankName { get; set; }
     }
 } 

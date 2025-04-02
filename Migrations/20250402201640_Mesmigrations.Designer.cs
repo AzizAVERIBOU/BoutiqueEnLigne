@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoutiqueEnLigne.Migrations
 {
     [DbContext(typeof(BoutiqueEnLigneContext))]
-    [Migration("20250402193652_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250402201640_Mesmigrations")]
+    partial class Mesmigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

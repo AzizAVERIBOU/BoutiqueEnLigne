@@ -4,6 +4,7 @@ using BoutiqueEnLigne.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoutiqueEnLigne.Migrations
 {
     [DbContext(typeof(BoutiqueEnLigneContext))]
-    partial class BoutiqueEnLigneContextModelSnapshot : ModelSnapshot
+    [Migration("20250402203206_UpdateUserModels")]
+    partial class UpdateUserModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -323,16 +326,11 @@ namespace BoutiqueEnLigne.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "state");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("AddressId");
 
                     b.HasIndex("CoordinatesId")
                         .IsUnique()
                         .HasFilter("[CoordinatesId] IS NOT NULL");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Addresses");
 
@@ -489,10 +487,6 @@ namespace BoutiqueEnLigne.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<string>("SiteWeb")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -535,6 +529,10 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.Property<int>("NumeroVendeur")
                         .HasColumnType("int");
+
+                    b.Property<string>("SiteWeb")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("Vendeur");
                 });
@@ -669,15 +667,7 @@ namespace BoutiqueEnLigne.Migrations
                         .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "CoordinatesId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("BoutiqueEnLigne.Models.User.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Coordinates");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Bank", b =>

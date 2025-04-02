@@ -10,14 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Configuration de la session
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
 // Configuration de la base de données
 builder.Services.AddDbContext<BoutiqueEnLigneContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -26,8 +18,8 @@ builder.Services.AddDbContext<BoutiqueEnLigneContext>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
+        options.LoginPath = "/GestionDuCompte/Connexion";
+        options.LogoutPath = "/GestionDuCompte/Deconnexion";
     });
 
 // Configuration des services HTTP
@@ -58,7 +50,6 @@ else
 }
 
 app.UseStaticFiles();
-app.UseSession();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

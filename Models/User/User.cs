@@ -50,10 +50,14 @@ namespace BoutiqueEnLigne.Models.User
         [Display(Name = "Image de profil")]
         public string Image { get; set; }
 
+        [Display(Name = "Site web")]
+        public string SiteWeb { get; set; }
+
         // Navigation properties
         public Address Address { get; set; }
         public Bank Bank { get; set; }
         public Company Company { get; set; }
+        public ICollection<Commande> Commandes { get; set; }
     }
 
     public enum RoleUtilisateur
