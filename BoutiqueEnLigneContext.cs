@@ -79,50 +79,91 @@ namespace BoutiqueEnLigne.Data
                 .HasOne(cv => cv.Client)
                 .WithMany(c => c.ClientVendeurs)
                 .HasForeignKey(cv => cv.ClientId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<ClientVendeur>()
                 .HasOne(cv => cv.Vendeur)
                 .WithMany(v => v.ClientVendeurs)
                 .HasForeignKey(cv => cv.VendeurId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Configuration des autres relations pour éviter les cycles
             modelBuilder.Entity<Client>()
                 .HasOne(c => c.Panier)
                 .WithOne(p => p.Client)
                 .HasForeignKey<Panier>(p => p.ClientId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Commande>()
                 .HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
                 .HasForeignKey(c => c.ClientId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Commande>()
                 .HasOne(c => c.Vendeur)
                 .WithMany(v => v.Commandes)
                 .HasForeignKey(c => c.VendeurId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Facture>()
                 .HasOne(f => f.Commande)
                 .WithOne(c => c.Facture)
                 .HasForeignKey<Facture>(f => f.CommandeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Facture>()
                 .HasOne(f => f.Client)
                 .WithMany()
                 .HasForeignKey(f => f.ClientId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Facture>()
                 .HasOne(f => f.Vendeur)
                 .WithMany()
                 .HasForeignKey(f => f.VendeurId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Configuration des relations pour User
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Address)
+                .WithOne()
+                .HasForeignKey<Address>(a => a.AddressId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Coordinates)
+                .WithOne()
+                .HasForeignKey<Address>(a => a.CoordinatesId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Bank)
+                .WithOne()
+                .HasForeignKey<Bank>(b => b.BankId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Company)
+                .WithOne()
+                .HasForeignKey<Company>(c => c.CompanyId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Company>()
+                .HasOne(c => c.Address)
+                .WithOne()
+                .HasForeignKey<Company>(c => c.AddressId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Configuration de la propriété Role pour User
+            modelBuilder.Entity<User>()
+                .Property(u => u.Role)
+                .HasConversion<int>()
+                .IsRequired();
         }
 
         public DbSet<User> Users { get; set; }

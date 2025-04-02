@@ -3,16 +3,22 @@ using BoutiqueEnLigne.Models;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
 using Microsoft.EntityFrameworkCore;
+using BoutiqueEnLigne.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace BoutiqueEnLigne.Controllers
 {
     public class GestionDuCompteController : Controller
     {
         private readonly BoutiqueEnLigneContext _context;
+        private readonly UserApiService _userApiService;
 
-        public GestionDuCompteController(BoutiqueEnLigneContext context)
+        public GestionDuCompteController(BoutiqueEnLigneContext context, UserApiService userApiService)
         {
             _context = context;
+            _userApiService = userApiService;
         }
 
         public IActionResult Index()
@@ -30,18 +36,41 @@ namespace BoutiqueEnLigne.Controllers
         }
 
         [HttpPost]
-        public IActionResult Connexion(string email, string motDePasse)
+        public async Task<IActionResult> Connexion(string email, string motDePasse)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.MotDePasse == motDePasse);
-            
-            if (user != null)
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(motDePasse))
             {
-                HttpContext.Session.SetInt32("UserId", user.Id);
-                return RedirectToAction("Infospersonnelles");
+                ModelState.AddModelError("", "Veuillez remplir tous les champs");
+                return View();
             }
-            
-            ViewBag.Error = "Email ou mot de passe incorrect";
-            return View();
+
+            var user = await _userApiService.AuthenticateUser(email, motDePasse);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Email ou mot de passe incorrect");
+                return View();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            return RedirectToAction("Infospersonnelles");
         }
 
         public IActionResult Inscription()
@@ -84,13 +113,14 @@ namespace BoutiqueEnLigne.Controllers
 
         public IActionResult Infospersonnelles()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
             {
                 return RedirectToAction("Connexion");
             }
 
-            var user = _context.Users.Find(userId.Value);
+            var userId = int.Parse(userIdClaim.Value);
+            var user = _context.Users.Find(userId);
             if (user == null)
             {
                 return RedirectToAction("Connexion");
@@ -102,15 +132,16 @@ namespace BoutiqueEnLigne.Controllers
         [HttpPost]
         public IActionResult Infospersonnelles(User user)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
             {
                 return RedirectToAction("Connexion");
             }
 
+            var userId = int.Parse(userIdClaim.Value);
             if (ModelState.IsValid)
             {
-                var existingUser = _context.Users.Find(userId.Value);
+                var existingUser = _context.Users.Find(userId);
                 if (existingUser != null)
                 {
                     existingUser.Nom = user.Nom;
@@ -153,9 +184,9 @@ namespace BoutiqueEnLigne.Controllers
             return View();
         }
 
-        public IActionResult Deconnexion()
+        public async Task<IActionResult> Deconnexion()
         {
-            HttpContext.Session.Remove("UserId");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Accueil");
         }
     }

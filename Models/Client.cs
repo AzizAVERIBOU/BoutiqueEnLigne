@@ -30,18 +30,18 @@ namespace BoutiqueEnLigne.Models
         public Panier Panier { get; set; }
 
         [Display(Name = "Date d'inscription")] // Affiche le nom de la date d'inscription dans le formulaire 
-        public DateTime DateInscription { get; set; }
+        public new DateTime DateInscription { get; set; }
 
         [Display(Name = "Dernière connexion")] // Affiche le nom de la dernière connexion dans le formulaire 
-        public DateTime DerniereConnexion { get; set; }
+        public new DateTime DerniereConnexion { get; set; }
 
         [Display(Name = "Statut")] // Affiche le nom du statut dans le formulaire 
-        public bool EstActif { get; set; }
+        public new bool EstActif { get; set; }
 
         [Display(Name = "Préférences de notification")] // Affiche le nom des préférences de notification dans le formulaire 
-        public bool NotificationsEmail { get; set; }
+        public new bool NotificationsEmail { get; set; }
 
         [Display(Name = "Newsletter")] // Affiche le nom de la newsletter dans le formulaire    
-        public bool InscritNewsletter { get; set; }
+        public new bool InscritNewsletter { get; set; }
     }
 }

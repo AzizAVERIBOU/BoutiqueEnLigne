@@ -35,9 +35,9 @@ namespace BoutiqueEnLigne.Models
         public string SiteWeb { get; set; }
 
         [Display(Name = "Date d'inscription")] // Affiche la date d'inscription dans le formulaire 
-        public DateTime DateInscription { get; set; }
+        public new DateTime DateInscription { get; set; }
 
         [Display(Name = "Statut")] // Affiche le nom du statut dans le formulaire   
-        public bool EstActif { get; set; }
+        public new bool EstActif { get; set; }
     }
 }

@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoutiqueEnLigne.Migrations
 {
     [DbContext(typeof(BoutiqueEnLigneContext))]
-    [Migration("20250401211201_UpdateUserModel")]
-    partial class UpdateUserModel
+    [Migration("20250402193652_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -238,7 +238,7 @@ namespace BoutiqueEnLigne.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "thumbnail");
 
-                    b.Property<string>("Images")
+                    b.PrimitiveCollection<string>("Images")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "images");
@@ -301,17 +301,14 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Address", b =>
                 {
                     b.Property<int>("AddressId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressId"));
 
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "city");
 
-                    b.Property<int>("CoordinatesId")
+                    b.Property<int?>("CoordinatesId")
                         .HasColumnType("int");
 
                     b.Property<string>("PostalCode")
@@ -331,7 +328,9 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.HasKey("AddressId");
 
-                    b.HasIndex("CoordinatesId");
+                    b.HasIndex("CoordinatesId")
+                        .IsUnique()
+                        .HasFilter("[CoordinatesId] IS NOT NULL");
 
                     b.ToTable("Addresses");
 
@@ -341,10 +340,7 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Bank", b =>
                 {
                     b.Property<int>("BankId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BankId"));
 
                     b.Property<string>("CardExpire")
                         .IsRequired()
@@ -379,12 +375,9 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Company", b =>
                 {
                     b.Property<int>("CompanyId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyId"));
-
-                    b.Property<int>("AddressId")
+                    b.Property<int?>("AddressId")
                         .HasColumnType("int");
 
                     b.Property<string>("Department")
@@ -405,7 +398,9 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.HasKey("CompanyId");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("AddressId")
+                        .IsUnique()
+                        .HasFilter("[AddressId] IS NOT NULL");
 
                     b.ToTable("Companies");
                 });
@@ -441,6 +436,12 @@ namespace BoutiqueEnLigne.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("DateInscription")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DerniereConnexion")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -448,29 +449,47 @@ namespace BoutiqueEnLigne.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("EstActif")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("InscritNewsletter")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MotDePasse")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Nom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("NotificationsEmail")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Prenom")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Users");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
+                    b.HasDiscriminator().HasValue("User");
 
                     b.UseTphMappingStrategy();
                 });
@@ -478,21 +497,6 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.Client", b =>
                 {
                     b.HasBaseType("BoutiqueEnLigne.Models.User.User");
-
-                    b.Property<DateTime>("DateInscription")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DerniereConnexion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("EstActif")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("InscritNewsletter")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("NotificationsEmail")
-                        .HasColumnType("bit");
 
                     b.Property<int>("NumeroClient")
                         .HasColumnType("int");
@@ -504,16 +508,10 @@ namespace BoutiqueEnLigne.Migrations
                 {
                     b.HasBaseType("BoutiqueEnLigne.Models.User.User");
 
-                    b.Property<DateTime>("DateInscription")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("DescriptionEntreprise")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("EstActif")
-                        .HasColumnType("bit");
 
                     b.Property<string>("NomEntreprise")
                         .IsRequired()
@@ -531,15 +529,6 @@ namespace BoutiqueEnLigne.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Users", t =>
-                        {
-                            t.Property("DateInscription")
-                                .HasColumnName("Vendeur_DateInscription");
-
-                            t.Property("EstActif")
-                                .HasColumnName("Vendeur_EstActif");
-                        });
-
                     b.HasDiscriminator().HasValue("Vendeur");
                 });
 
@@ -548,13 +537,13 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany("ClientVendeurs")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany("ClientVendeurs")
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -567,13 +556,13 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany("Commandes")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany("Commandes")
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -586,19 +575,19 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Commande", "Commande")
                         .WithOne("Facture")
                         .HasForeignKey("BoutiqueEnLigne.Models.Facture", "CommandeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
                         .WithMany()
                         .HasForeignKey("VendeurId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -613,7 +602,7 @@ namespace BoutiqueEnLigne.Migrations
                     b.HasOne("BoutiqueEnLigne.Models.Client", "Client")
                         .WithOne("Panier")
                         .HasForeignKey("BoutiqueEnLigne.Models.Panier", "ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Client");
@@ -662,21 +651,40 @@ namespace BoutiqueEnLigne.Migrations
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Address", b =>
                 {
-                    b.HasOne("BoutiqueEnLigne.Models.User.Coordinates", "Coordinates")
-                        .WithMany()
-                        .HasForeignKey("CoordinatesId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("BoutiqueEnLigne.Models.User.User", null)
+                        .WithOne("Address")
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BoutiqueEnLigne.Models.User.Coordinates", "Coordinates")
+                        .WithOne()
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Address", "CoordinatesId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Coordinates");
+                });
+
+            modelBuilder.Entity("BoutiqueEnLigne.Models.User.Bank", b =>
+                {
+                    b.HasOne("BoutiqueEnLigne.Models.User.User", null)
+                        .WithOne("Bank")
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Bank", "BankId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.User.Company", b =>
                 {
                     b.HasOne("BoutiqueEnLigne.Models.User.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne()
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Company", "AddressId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("BoutiqueEnLigne.Models.User.User", null)
+                        .WithOne("Company")
+                        .HasForeignKey("BoutiqueEnLigne.Models.User.Company", "CompanyId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Address");
@@ -698,6 +706,18 @@ namespace BoutiqueEnLigne.Migrations
             modelBuilder.Entity("BoutiqueEnLigne.Models.Panier", b =>
                 {
                     b.Navigation("Produits");
+                });
+
+            modelBuilder.Entity("BoutiqueEnLigne.Models.User.User", b =>
+                {
+                    b.Navigation("Address")
+                        .IsRequired();
+
+                    b.Navigation("Bank")
+                        .IsRequired();
+
+                    b.Navigation("Company")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.Client", b =>

@@ -12,6 +12,8 @@ namespace BoutiqueEnLigne.Models.User
         [Display(Name = "Adresse")] // Affiche le nom de l'adresse dans le formulaire 
         public Address Address { get; set; }
 
+        public int? AddressId { get; set; }
+
         [JsonPropertyName("department")] // Département dans la base de données
         [Display(Name = "Département")] // Affiche le nom du département dans le formulaire 
         public string Department { get; set; }

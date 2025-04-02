@@ -1,7 +1,5 @@
 using System.Text.Json;
 using BoutiqueEnLigne.Models;
-using BoutiqueEnLigne.Models.User;
-using BoutiqueEnLigne.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoutiqueEnLigne.Services
@@ -9,89 +7,137 @@ namespace BoutiqueEnLigne.Services
     public class ProductApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly BoutiqueEnLigneContext _context;
-        private const string API_URL = "https://dummyjson.com";
+        private readonly ILogger<ProductApiService> _logger;
+        private readonly string _baseUrl = "https://dummyjson.com";
 
-        public ProductApiService(HttpClient httpClient, BoutiqueEnLigneContext context)
+        public ProductApiService(HttpClient httpClient, ILogger<ProductApiService> logger)
         {
             _httpClient = httpClient;
-            _context = context;
+            _logger = logger;
+            _httpClient.BaseAddress = new Uri(_baseUrl);
         }
 
-        public async Task PopulateProductsFromApi()
+        public async Task<List<Product>> GetProductsAsync(int skip = 0, int limit = 24)
         {
             try
             {
-                // Get all users to use as vendors
-                var users = await _context.Users.ToListAsync();
-                if (!users.Any())
-                {
-                    Console.WriteLine("No users found in the database. Please ensure users are populated first.");
-                    return;
-                }
-
-                // Get all products without limit
-                var response = await _httpClient.GetStringAsync($"{API_URL}/products");
-                Console.WriteLine($"Réponse de l'API : {response}");
+                _logger.LogInformation($"Récupération des produits depuis l'API (skip={skip}, limit={limit})");
                 
+                var response = await _httpClient.GetAsync($"/products?skip={skip}&limit={limit}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 };
-                
-                var result = JsonSerializer.Deserialize<JsonProductResponse>(response, options);
-                Console.WriteLine($"Désérialisation réussie : {result != null}");
-                if (result != null)
+
+                var apiResponse = JsonSerializer.Deserialize<JsonProductResponse>(content, options);
+                if (apiResponse?.Products == null || !apiResponse.Products.Any())
                 {
-                    Console.WriteLine($"Total : {result.Total}, Skip : {result.Skip}, Limit : {result.Limit}");
+                    _logger.LogWarning("Aucun produit reçu de l'API");
+                    return new List<Product>();
                 }
 
-                if (result?.Products != null)
-                {
-                    Console.WriteLine($"Nombre de produits reçus de l'API : {result.Products.Count}");
-                    
-                    // Create a random number generator for vendor assignment
-                    var random = new Random();
-                    
-                    foreach (var product in result.Products)
-                    {
-                        // Randomly select a user as the vendor
-                        var randomVendor = users[random.Next(0, users.Count)];
-                        
-                        var newProduct = new Product
-                        {
-                            Nom = product.Title,
-                            Description = product.Description,
-                            Prix = product.Price,
-                            Image = product.Thumbnail,
-                            Categorie = product.Category,
-                            Note = product.Rating,
-                            Quantite = product.Stock,
-                            PourcentageReduction = product.DiscountPercentage,
-                            Marque = string.IsNullOrEmpty(product.Brand) ? "Generic" : product.Brand,
-                            Images = product.Images,
-                            DateAjout = DateTime.Now,
-                            DateModification = DateTime.Now,
-                            Disponibilite = DisponibiliteProduit.Stock,
-                            VendeurId = randomVendor.Id // Assign the selected user as vendor
-                        };
+                _logger.LogInformation($"Nombre de produits reçus de l'API : {apiResponse.Products.Count}");
 
-                        _context.Products.Add(newProduct);
-                        Console.WriteLine($"Produit ajouté : {newProduct.Nom} (Vendeur: {randomVendor.Email})");
-                    }
-
-                    var resultat = await _context.SaveChangesAsync();
-                    Console.WriteLine($"Nombre de produits sauvegardés : {resultat}");
-                }
-                else
+                var products = apiResponse.Products.Select(apiProduct => new Product
                 {
-                    Console.WriteLine("Aucun produit reçu de l'API");
-                }
+                    ProduitId = apiProduct.Id,
+                    Nom = apiProduct.Title,
+                    Description = apiProduct.Description,
+                    Prix = apiProduct.Price,
+                    Categorie = apiProduct.Category,
+                    Image = apiProduct.Thumbnail,
+                    Quantite = apiProduct.Stock,
+                    Disponibilite = DisponibiliteProduit.Stock,
+                    VendeurId = 1,
+                    DateAjout = DateTime.Now,
+                    DateModification = DateTime.Now,
+                    PourcentageReduction = apiProduct.DiscountPercentage,
+                    Note = apiProduct.Rating,
+                    Marque = apiProduct.Brand ?? "Marque inconnue",
+                    Images = apiProduct.Images ?? new List<string>()
+                }).ToList();
+
+                return products;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur lors du peuplement des produits : {ex.Message}");
-                Console.WriteLine($"Stack trace : {ex.StackTrace}");
+                _logger.LogError(ex, "Erreur lors de la récupération des produits depuis l'API");
+                throw;
+            }
+        }
+
+        public async Task<Product> GetProductByIdAsync(int id)
+        {
+            try
+            {
+                _logger.LogInformation($"Récupération du produit avec l'ID: {id} depuis l'API");
+                
+                var response = await _httpClient.GetAsync($"/products/{id}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var apiProduct = JsonSerializer.Deserialize<JsonProduct>(content, options);
+                if (apiProduct == null)
+                {
+                    _logger.LogWarning($"Produit non trouvé avec l'ID: {id}");
+                    return null;
+                }
+
+                _logger.LogInformation($"Produit trouvé: {apiProduct.Title} (ID: {apiProduct.Id})");
+
+                return new Product
+                {
+                    ProduitId = apiProduct.Id,
+                    Nom = apiProduct.Title,
+                    Description = apiProduct.Description,
+                    Prix = apiProduct.Price,
+                    Categorie = apiProduct.Category,
+                    Image = apiProduct.Thumbnail,
+                    Quantite = apiProduct.Stock,
+                    Disponibilite = DisponibiliteProduit.Stock,
+                    VendeurId = 1,
+                    DateAjout = DateTime.Now,
+                    DateModification = DateTime.Now,
+                    PourcentageReduction = apiProduct.DiscountPercentage,
+                    Note = apiProduct.Rating,
+                    Marque = apiProduct.Brand ?? "Marque inconnue",
+                    Images = apiProduct.Images ?? new List<string>()
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erreur lors de la récupération du produit {id} depuis l'API");
+                throw;
+            }
+        }
+
+        public async Task<int> GetTotalProductsCountAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("/products");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var apiResponse = JsonSerializer.Deserialize<JsonProductResponse>(content, options);
+                return apiResponse?.Total ?? 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération du nombre total de produits");
                 throw;
             }
         }

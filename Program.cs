@@ -3,6 +3,7 @@ using BoutiqueEnLigne.Models;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
 using BoutiqueEnLigne.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,9 +22,21 @@ builder.Services.AddSession(options =>
 builder.Services.AddDbContext<BoutiqueEnLigneContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Enregistrement des services API
-builder.Services.AddHttpClient<UserApiService>();
-builder.Services.AddHttpClient<ProductApiService>();
+// Configuration de l'authentification
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+    });
+
+// Configuration des services HTTP
+builder.Services.AddHttpClient();
+
+// Enregistrement des services
+builder.Services.AddScoped<ProductApiService>();
+builder.Services.AddScoped<AuthApiService>();
+builder.Services.AddScoped<UserApiService>();
 
 var app = builder.Build();
 
@@ -47,6 +60,7 @@ else
 app.UseStaticFiles();
 app.UseSession();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

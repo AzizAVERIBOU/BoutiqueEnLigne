@@ -22,6 +22,8 @@ namespace BoutiqueEnLigne.Models.User
         [Display(Name = "Coordonnées")]
         public Coordinates Coordinates { get; set; }
 
+        public int? CoordinatesId { get; set; }
+
         [JsonPropertyName("postalCode")] // Code postal dans la base de données
         [Display(Name = "Code postal")]
         [Required(ErrorMessage = "Le code postal est requis")]
