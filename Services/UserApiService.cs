@@ -2,6 +2,7 @@ using System.Text.Json;
 using BoutiqueEnLigne.Models;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoutiqueEnLigne.Services
 {
@@ -21,17 +22,33 @@ namespace BoutiqueEnLigne.Services
         {
             try
             {
-                var response = await _httpClient.GetStringAsync($"{API_URL}/users"); // Récupérer les données de l'API
-                var users = JsonSerializer.Deserialize<List<JsonUser>>(response); // Désérialiser les données de l'API
+                var response = await _httpClient.GetStringAsync($"{API_URL}/users");
+                Console.WriteLine($"Réponse de l'API : {response}");
+                
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                
+                var users = JsonSerializer.Deserialize<List<JsonUser>>(response, options);
+                Console.WriteLine($"Nombre d'utilisateurs reçus de l'API : {users?.Count ?? 0}");
 
                 if (users != null)
                 {
                     foreach (var user in users)
                     {
+                        // Vérifier si l'utilisateur existe déjà
+                        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+                        if (existingUser != null)
+                        {
+                            Console.WriteLine($"L'utilisateur {user.Email} existe déjà, on le saute.");
+                            continue;
+                        }
+
                         var newUser = new Client
                         {
-                            Nom = user.Username ?? "User" + user.Id,
-                            Prenom = "User", // Valeur par défaut car l'API ne fournit pas de prénom
+                            Nom = user.Name?.Lastname ?? user.Username ?? "User" + user.Id,
+                            Prenom = user.Name?.Firstname ?? "User",
                             Email = user.Email ?? $"user{user.Id}@example.com",
                             MotDePasse = user.Password ?? $"Password{user.Id}!", // Mot de passe par défaut si null
                             DateInscription = DateTime.Now,
@@ -44,14 +61,25 @@ namespace BoutiqueEnLigne.Services
                         };
 
                         _context.Users.Add(newUser);
+                        Console.WriteLine($"Utilisateur ajouté : {newUser.Email} avec le mot de passe : {newUser.MotDePasse}");
                     }
 
-                    await _context.SaveChangesAsync();
+                    var resultat = await _context.SaveChangesAsync();
+                    Console.WriteLine($"Nombre d'utilisateurs sauvegardés : {resultat}");
+
+                    // Afficher tous les utilisateurs créés pour vérification
+                    var allUsers = await _context.Users.ToListAsync();
+                    Console.WriteLine("\nListe des utilisateurs créés :");
+                    foreach (var u in allUsers)
+                    {
+                        Console.WriteLine($"Email: {u.Email}, Mot de passe: {u.MotDePasse}");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du peuplement des utilisateurs : {ex.Message}");
+                Console.WriteLine($"Stack trace : {ex.StackTrace}");
                 throw;
             }
         }
@@ -66,12 +94,19 @@ namespace BoutiqueEnLigne.Services
         public string Password { get; set; }
         public JsonAddress Address { get; set; }
         public string Phone { get; set; }
+        public JsonName Name { get; set; }
+    }
+
+    public class JsonName
+    {
+        public string Firstname { get; set; }
+        public string Lastname { get; set; }
     }
 
     public class JsonAddress // Classe pour désérialiser les données de l'API
     {
         public string Street { get; set; }
-        public string Number { get; set; }
+        public int Number { get; set; }
         public string City { get; set; }
         public string Zipcode { get; set; }
         public JsonGeo Geolocation { get; set; }

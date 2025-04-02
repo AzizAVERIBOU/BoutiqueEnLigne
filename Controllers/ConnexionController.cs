@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BoutiqueEnLigne.Models;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
+using System.Linq;
 
 namespace BoutiqueEnLigne.Controllers
 {
@@ -24,15 +25,15 @@ namespace BoutiqueEnLigne.Controllers
         [HttpPost]
         public IActionResult Index(string email, string motDePasse)
         {
-            // Pour le moment, on utilise des identifiants en dur
-            if (email == "user@test.com" && motDePasse == "password123")
+            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.MotDePasse == motDePasse);
+            
+            if (user != null)
             {
-                HttpContext.Session.SetString("UserId", "1");
-                HttpContext.Session.SetString("UserEmail", email);
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("UserEmail", user.Email);
                 return RedirectToAction("Index", "Accueil");
             }
 
-            // Si la connexion échoue, on affiche un message d'erreur
             ModelState.AddModelError("", "Email ou mot de passe incorrect");
             return View();
         }
