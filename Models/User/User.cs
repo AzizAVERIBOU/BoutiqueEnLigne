@@ -23,6 +23,21 @@ namespace BoutiqueEnLigne.Models.User
         [StringLength(50, ErrorMessage = "Le prénom ne peut pas dépasser 50 caractères")]
         public string Prenom { get; set; }
 
+        [Display(Name = "Nom d'utilisateur")]
+        [StringLength(50, ErrorMessage = "Le nom d'utilisateur ne peut pas dépasser 50 caractères")]
+        public string Username { get; set; }
+
+        [Display(Name = "Genre")]
+        public string Genre { get; set; }
+
+        [Display(Name = "Téléphone")]
+        [Phone(ErrorMessage = "Format de téléphone invalide")]
+        public string Telephone { get; set; }
+
+        [Display(Name = "Date de naissance")]
+        [DataType(DataType.Date)]
+        public DateTime? DateNaissance { get; set; }
+
         [Required(ErrorMessage = "Le mot de passe est requis")]
         [Display(Name = "Mot de passe")]
         [DataType(DataType.Password)]

@@ -122,7 +122,11 @@ namespace BoutiqueEnLigne.Services
                         InscritNewsletter = false,
                         NotificationsEmail = false,
                         Image = user.Image ?? "default-avatar.png",
-                        Role = RoleUtilisateur.Client
+                        Role = RoleUtilisateur.Client,
+                        Username = user.Username ?? user.Email.Split('@')[0],
+                        Genre = user.Gender ?? "other",
+                        Telephone = user.Phone ?? "",
+                        DateNaissance = !string.IsNullOrEmpty(user.BirthDate) ? DateTime.Parse(user.BirthDate) : null
                     };
 
                     Console.WriteLine("Ajout de l'utilisateur au contexte...");
@@ -253,22 +257,38 @@ namespace BoutiqueEnLigne.Services
                         _context.Companies.Add(company);
                     }
 
-                    var user = new Client
+                    // Créer le nouvel utilisateur
+                    var newUser = new User
                     {
                         Email = apiUser.Email,
                         MotDePasse = apiUser.Password,
                         Nom = apiUser.LastName,
                         Prenom = apiUser.FirstName,
-                        Role = RoleUtilisateur.Client,
                         DateInscription = DateTime.Now,
                         DerniereConnexion = DateTime.Now,
                         EstActif = true,
-                        Image = apiUser.Image,
-                        Address = address,
-                        Bank = bank,
-                        Company = company
+                        InscritNewsletter = false,
+                        NotificationsEmail = false,
+                        Image = apiUser.Image ?? "default-avatar.png",
+                        Role = RoleUtilisateur.Client,
+                        Username = apiUser.Username ?? apiUser.Email.Split('@')[0],
+                        Genre = apiUser.Gender ?? "other",
+                        Telephone = apiUser.Phone ?? "",
+                        DateNaissance = !string.IsNullOrEmpty(apiUser.BirthDate) ? DateTime.Parse(apiUser.BirthDate) : null
                     };
-                    users.Add(user);
+
+                    Console.WriteLine("Données de l'utilisateur à créer:");
+                    Console.WriteLine($"- Email: {newUser.Email}");
+                    Console.WriteLine($"- Nom: {newUser.Nom}");
+                    Console.WriteLine($"- Prénom: {newUser.Prenom}");
+                    Console.WriteLine($"- Username: {newUser.Username}");
+                    Console.WriteLine($"- Genre: {newUser.Genre}");
+                    Console.WriteLine($"- Téléphone: {newUser.Telephone}");
+                    Console.WriteLine($"- Date de naissance: {newUser.DateNaissance}");
+                    Console.WriteLine($"- Image: {newUser.Image}");
+                    Console.WriteLine($"- Role: {newUser.Role}");
+
+                    users.Add(newUser);
                 }
 
                 await _context.SaveChangesAsync();

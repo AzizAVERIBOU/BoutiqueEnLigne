@@ -141,13 +141,21 @@ namespace BoutiqueEnLigne.Controllers
                         InscritNewsletter = false,
                         NotificationsEmail = false,
                         Image = apiUser.Image ?? "default-avatar.png",
-                        Role = RoleUtilisateur.Client
+                        Role = RoleUtilisateur.Client,
+                        Username = apiUser.Username ?? apiUser.Email.Split('@')[0],
+                        Genre = "other",
+                        Telephone = "",
+                        DateNaissance = null
                     };
 
                     Console.WriteLine("Données de l'utilisateur à créer:");
                     Console.WriteLine($"- Email: {newUser.Email}");
                     Console.WriteLine($"- Nom: {newUser.Nom}");
                     Console.WriteLine($"- Prénom: {newUser.Prenom}");
+                    Console.WriteLine($"- Username: {newUser.Username}");
+                    Console.WriteLine($"- Genre: {newUser.Genre}");
+                    Console.WriteLine($"- Téléphone: {newUser.Telephone}");
+                    Console.WriteLine($"- Date de naissance: {newUser.DateNaissance}");
                     Console.WriteLine($"- Image: {newUser.Image}");
                     Console.WriteLine($"- Role: {newUser.Role}");
 
@@ -219,6 +227,17 @@ namespace BoutiqueEnLigne.Controllers
                         return View(user);
                     }
 
+                    // Initialiser les nouveaux champs
+                    user.Username = user.Username ?? user.Email.Split('@')[0];
+                    user.Genre = user.Genre ?? "other";
+                    user.Telephone = user.Telephone ?? "";
+                    user.DateInscription = DateTime.Now;
+                    user.DerniereConnexion = DateTime.Now;
+                    user.EstActif = true;
+                    user.InscritNewsletter = false;
+                    user.NotificationsEmail = false;
+                    user.Role = RoleUtilisateur.Client;
+
                     // Ajouter l'utilisateur à la base de données
                     _context.Users.Add(user);
                     _context.SaveChanges();
@@ -256,64 +275,126 @@ namespace BoutiqueEnLigne.Controllers
         }
 
         [Authorize]
-        public IActionResult Infospersonnelles()
+        public async Task<IActionResult> Infospersonnelles()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            try
             {
+                Console.WriteLine("=== Début de la méthode Infospersonnelles ===");
+                var userEmail = User.Identity.Name;
+                Console.WriteLine($"Email de l'utilisateur connecté: {userEmail}");
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == userEmail);
+
+                if (user == null)
+                {
+                    Console.WriteLine("Utilisateur non trouvé dans la base de données");
+                    return RedirectToAction("Connexion");
+                }
+
+                Console.WriteLine("Informations de l'utilisateur trouvé:");
+                Console.WriteLine($"- ID: {user.Id}");
+                Console.WriteLine($"- Email: {user.Email}");
+                Console.WriteLine($"- Nom: {user.Nom}");
+                Console.WriteLine($"- Prénom: {user.Prenom}");
+                Console.WriteLine($"- Username: {user.Username}");
+                Console.WriteLine($"- Genre: {user.Genre}");
+                Console.WriteLine($"- Téléphone: {user.Telephone}");
+                Console.WriteLine($"- Date de naissance: {user.DateNaissance}");
+                Console.WriteLine($"- Image: {user.Image}");
+                Console.WriteLine($"- Role: {user.Role}");
+                Console.WriteLine($"- Date d'inscription: {user.DateInscription}");
+                Console.WriteLine($"- Dernière connexion: {user.DerniereConnexion}");
+                Console.WriteLine($"- Est actif: {user.EstActif}");
+                Console.WriteLine($"- Inscrit newsletter: {user.InscritNewsletter}");
+                Console.WriteLine($"- Notifications email: {user.NotificationsEmail}");
+
+                // Vérifier que les valeurs ne sont pas null
+                user.Nom = user.Nom ?? string.Empty;
+                user.Prenom = user.Prenom ?? string.Empty;
+                user.Email = user.Email ?? string.Empty;
+                user.Image = user.Image ?? "default-avatar.png";
+                user.Username = user.Username ?? string.Empty;
+                user.Genre = user.Genre ?? string.Empty;
+                user.Telephone = user.Telephone ?? string.Empty;
+
+                Console.WriteLine("=== Fin de la méthode Infospersonnelles ===");
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur dans Infospersonnelles: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner stack trace: {ex.InnerException.StackTrace}");
+                }
                 return RedirectToAction("Connexion");
             }
-
-            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == userId);
-            if (user == null)
-            {
-                return RedirectToAction("Connexion");
-            }
-
-            return View(user);
         }
 
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Infospersonnelles(User user)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            try
             {
-                return RedirectToAction("Connexion");
-            }
+                Console.WriteLine("=== Début de la méthode POST Infospersonnelles ===");
+                Console.WriteLine("Données reçues du formulaire:");
+                Console.WriteLine($"- Email: {user.Email}");
+                Console.WriteLine($"- Nom: {user.Nom}");
+                Console.WriteLine($"- Prénom: {user.Prenom}");
+                Console.WriteLine($"- Username: {user.Username}");
+                Console.WriteLine($"- Genre: {user.Genre}");
+                Console.WriteLine($"- Téléphone: {user.Telephone}");
+                Console.WriteLine($"- Date de naissance: {user.DateNaissance}");
+                Console.WriteLine($"- Est actif: {user.EstActif}");
+                Console.WriteLine($"- Inscrit newsletter: {user.InscritNewsletter}");
+                Console.WriteLine($"- Notifications email: {user.NotificationsEmail}");
 
-            if (ModelState.IsValid)
+                var currentUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
+
+                if (currentUser == null)
+                {
+                    Console.WriteLine("Utilisateur actuel non trouvé dans la base de données");
+                    return RedirectToAction("Connexion");
+                }
+
+                Console.WriteLine("Mise à jour des informations de l'utilisateur...");
+                // Mise à jour des informations modifiables
+                currentUser.Prenom = user.Prenom;
+                currentUser.Nom = user.Nom;
+                currentUser.Email = user.Email;
+                currentUser.Username = user.Username;
+                currentUser.Genre = user.Genre;
+                currentUser.Telephone = user.Telephone;
+                currentUser.DateNaissance = user.DateNaissance;
+                currentUser.InscritNewsletter = user.InscritNewsletter;
+                currentUser.NotificationsEmail = user.NotificationsEmail;
+                currentUser.EstActif = user.EstActif;
+                currentUser.DerniereConnexion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Informations mises à jour avec succès");
+                TempData["Message"] = "Vos informations ont été mises à jour avec succès.";
+
+                Console.WriteLine("=== Fin de la méthode POST Infospersonnelles ===");
+                return RedirectToAction("Infospersonnelles");
+            }
+            catch (Exception ex)
             {
-                try
+                Console.WriteLine($"Erreur dans la mise à jour des informations: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
                 {
-                    var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-                    if (existingUser != null)
-                    {
-                        // Mettre à jour uniquement les champs modifiables
-                        existingUser.Prenom = user.Prenom;
-                        existingUser.Nom = user.Nom;
-                        existingUser.Email = user.Email;
-                        existingUser.InscritNewsletter = user.InscritNewsletter;
-                        existingUser.NotificationsEmail = user.NotificationsEmail;
-                        existingUser.EstActif = user.EstActif;
-
-                        // Mettre à jour la date de dernière connexion
-                        existingUser.DerniereConnexion = DateTime.Now;
-
-                        await _context.SaveChangesAsync();
-                        TempData["Message"] = "Vos informations ont été mises à jour avec succès.";
-                        return RedirectToAction(nameof(Infospersonnelles));
-                    }
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner stack trace: {ex.InnerException.StackTrace}");
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erreur lors de la mise à jour des informations: {ex.Message}");
-                    ModelState.AddModelError("", "Une erreur est survenue lors de la mise à jour de vos informations.");
-                }
+                ModelState.AddModelError("", "Une erreur est survenue lors de la mise à jour de vos informations.");
+                return View(user);
             }
-
-            return View(user);
         }
 
         [Authorize]

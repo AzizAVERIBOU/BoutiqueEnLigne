@@ -5,6 +5,28 @@
 @{
     Layout = "_Layout";
     ViewBag.Title = "Informations personnelles";
+    
+    // Log des données reçues
+    Console.WriteLine("=== Données reçues dans la vue ===");
+    Console.WriteLine($"Model est null: {Model == null}");
+    if (Model != null)
+    {
+        Console.WriteLine($"- ID: {Model.Id}");
+        Console.WriteLine($"- Email: {Model.Email}");
+        Console.WriteLine($"- Nom: {Model.Nom}");
+        Console.WriteLine($"- Prénom: {Model.Prenom}");
+        Console.WriteLine($"- Username: {Model.Username}");
+        Console.WriteLine($"- Genre: {Model.Genre}");
+        Console.WriteLine($"- Téléphone: {Model.Telephone}");
+        Console.WriteLine($"- Date de naissance: {Model.DateNaissance}");
+        Console.WriteLine($"- Image: {Model.Image}");
+        Console.WriteLine($"- Role: {Model.Role}");
+        Console.WriteLine($"- Date d'inscription: {Model.DateInscription}");
+        Console.WriteLine($"- Dernière connexion: {Model.DerniereConnexion}");
+        Console.WriteLine($"- Est actif: {Model.EstActif}");
+        Console.WriteLine($"- Inscrit newsletter: {Model.InscritNewsletter}");
+        Console.WriteLine($"- Notifications email: {Model.NotificationsEmail}");
+    }
 }
 
 <div class="container py-5">
@@ -74,7 +96,7 @@
                                     <span class="input-group-text">
                                         <i class="bi bi-person"></i>
                                     </span>
-                                    <input asp-for="Prenom" class="form-control" required>
+                                    <input asp-for="Prenom" class="form-control" value="@Model.Prenom" required>
                                 </div>
                             </div>
 
@@ -84,7 +106,52 @@
                                     <span class="input-group-text">
                                         <i class="bi bi-person"></i>
                                     </span>
-                                    <input asp-for="Nom" class="form-control" required>
+                                    <input asp-for="Nom" class="form-control" value="@Model.Nom" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Username" class="form-label">Nom d'utilisateur</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-badge"></i>
+                                    </span>
+                                    <input asp-for="Username" class="form-control" value="@Model.Username">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Genre" class="form-label">Genre</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-gender-ambiguous"></i>
+                                    </span>
+                                    <select asp-for="Genre" class="form-control">
+                                        <option value="">Sélectionner</option>
+                                        <option value="male" selected="@(Model.Genre == "male")">Masculin</option>
+                                        <option value="female" selected="@(Model.Genre == "female")">Féminin</option>
+                                        <option value="other" selected="@(Model.Genre == "other")">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Telephone" class="form-label">Téléphone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-telephone"></i>
+                                    </span>
+                                    <input asp-for="Telephone" class="form-control" value="@Model.Telephone">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DateNaissance" class="form-label">Date de naissance</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar"></i>
+                                    </span>
+                                    <input asp-for="DateNaissance" type="date" class="form-control" value="@(Model.DateNaissance?.ToString("yyyy-MM-dd"))">
                                 </div>
                             </div>
 
@@ -94,7 +161,7 @@
                                     <span class="input-group-text">
                                         <i class="bi bi-envelope"></i>
                                     </span>
-                                    <input asp-for="Email" class="form-control" required>
+                                    <input asp-for="Email" class="form-control" value="@Model.Email" required>
                                 </div>
                             </div>
 
@@ -105,7 +172,7 @@
                                     <span class="input-group-text">
                                         <i class="bi bi-calendar"></i>
                                     </span>
-                                    <input asp-for="DateInscription" class="form-control" readonly>
+                                    <input asp-for="DateInscription" class="form-control" value="@Model.DateInscription.ToString("dd/MM/yyyy HH:mm")" readonly>
                                 </div>
                             </div>
 
@@ -115,28 +182,28 @@
                                     <span class="input-group-text">
                                         <i class="bi bi-clock-history"></i>
                                     </span>
-                                    <input asp-for="DerniereConnexion" class="form-control" readonly>
+                                    <input asp-for="DerniereConnexion" class="form-control" value="@Model.DerniereConnexion.ToString("dd/MM/yyyy HH:mm")" readonly>
                                 </div>
                             </div>
 
                             <!-- Préférences -->
                             <div class="col-12">
                                 <div class="form-check form-switch">
-                                    <input asp-for="InscritNewsletter" class="form-check-input" type="checkbox">
+                                    <input asp-for="InscritNewsletter" class="form-check-input" type="checkbox" checked="@Model.InscritNewsletter">
                                     <label asp-for="InscritNewsletter" class="form-check-label">S'inscrire à la newsletter</label>
                                 </div>
                             </div>
 
                             <div class="col-12">
                                 <div class="form-check form-switch">
-                                    <input asp-for="NotificationsEmail" class="form-check-input" type="checkbox">
+                                    <input asp-for="NotificationsEmail" class="form-check-input" type="checkbox" checked="@Model.NotificationsEmail">
                                     <label asp-for="NotificationsEmail" class="form-check-label">Recevoir les notifications par email</label>
                                 </div>
                             </div>
 
                             <div class="col-12">
                                 <div class="form-check form-switch">
-                                    <input asp-for="EstActif" class="form-check-input" type="checkbox">
+                                    <input asp-for="EstActif" class="form-check-input" type="checkbox" checked="@Model.EstActif">
                                     <label asp-for="EstActif" class="form-check-label">Compte actif</label>
                                 </div>
                             </div>
