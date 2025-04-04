@@ -24,12 +24,10 @@ namespace BoutiqueEnLigne.Services
             _httpClient.BaseAddress = new Uri("https://dummyjson.com/");
         }
 
-        public async Task<User> AuthenticateUser(string email, string password)
+        private async Task<List<DummyUser>> GetUsersAsync()
         {
             try
             {
-                _logger.LogInformation("Tentative d'authentification pour l'email: {Email}", email);
-
                 var response = await _httpClient.GetAsync("/users");
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadAsStringAsync();
@@ -37,147 +35,159 @@ namespace BoutiqueEnLigne.Services
 
                 if (apiResponse?.Users == null)
                 {
-                    _logger.LogWarning("Aucun utilisateur trouvé dans l'API");
-                    return null;
+                    Console.WriteLine("Aucun utilisateur trouvé dans l'API");
+                    return new List<DummyUser>();
                 }
 
-                var apiUser = apiResponse.Users.FirstOrDefault(u => 
-                    u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && 
-                    u.Password == password);
-
-                if (apiUser == null)
-                {
-                    _logger.LogWarning("Utilisateur non trouvé dans l'API");
-                    return null;
-                }
-
-                _logger.LogInformation("Utilisateur trouvé dans l'API: Email={Email}, FirstName={FirstName}, LastName={LastName}",
-                    apiUser.Email, apiUser.FirstName, apiUser.LastName);
-
-                var existingUser = await _context.Users
-                    .Include(u => u.Address)
-                        .ThenInclude(a => a.Coordinates)
-                    .Include(u => u.Bank)
-                    .Include(u => u.Company)
-                        .ThenInclude(c => c.Address)
-                    .FirstOrDefaultAsync(u => u.Email == email);
-
-                if (existingUser != null)
-                {
-                    existingUser.DerniereConnexion = DateTime.Now;
-                    await _context.SaveChangesAsync();
-                    _logger.LogInformation("Dernière connexion mise à jour pour l'utilisateur: {Email}", email);
-                    return existingUser;
-                }
-
-                // Créer le nouvel utilisateur d'abord
-                var newUser = new Client
-                {
-                    Email = apiUser.Email,
-                    MotDePasse = apiUser.Password,
-                    Nom = apiUser.LastName,
-                    Prenom = apiUser.FirstName,
-                    Role = RoleUtilisateur.Client,
-                    DateInscription = DateTime.Now,
-                    DerniereConnexion = DateTime.Now,
-                    EstActif = true,
-                    Image = apiUser.Image
-                };
-
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-
-                // Créer et associer les coordonnées si nécessaire
-                Coordinates coordinates = null;
-                if (apiUser.Address?.Coordinates != null)
-                {
-                    coordinates = new Coordinates
-                    {
-                        Latitude = apiUser.Address.Coordinates.Latitude,
-                        Longitude = apiUser.Address.Coordinates.Longitude
-                    };
-                    _context.Coordinates.Add(coordinates);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Créer et associer l'adresse
-                if (apiUser.Address != null && !string.IsNullOrEmpty(apiUser.Address.Address1))
-                {
-                    _logger.LogInformation("Création de l'adresse pour l'utilisateur: {Email}, Address1={Address1}, City={City}",
-                        email, apiUser.Address.Address1, apiUser.Address.City);
-
-                    var address = new Address
-                    {
-                        Address1 = apiUser.Address.Address1 ?? "Adresse non spécifiée",
-                        City = apiUser.Address.City ?? "Ville non spécifiée",
-                        PostalCode = apiUser.Address.PostalCode ?? "00000",
-                        State = apiUser.Address.State ?? "État non spécifié",
-                        Coordinates = coordinates,
-                        UserId = newUser.Id
-                    };
-                    _context.Addresses.Add(address);
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    _logger.LogWarning("Aucune adresse valide trouvée pour l'utilisateur: {Email}", email);
-                    
-                    // Créer une adresse par défaut
-                    var address = new Address
-                    {
-                        Address1 = "Adresse non spécifiée",
-                        City = "Ville non spécifiée",
-                        PostalCode = "00000",
-                        State = "État non spécifié",
-                        UserId = newUser.Id
-                    };
-                    _context.Addresses.Add(address);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Créer et associer la banque
-                if (apiUser.Bank != null)
-                {
-                    var bank = new Bank
-                    {
-                        BankId = newUser.Id,  // Utiliser l'ID de l'utilisateur comme clé étrangère
-                        CardExpire = apiUser.Bank.CardExpire,
-                        CardNumber = apiUser.Bank.CardNumber,
-                        CardType = apiUser.Bank.CardType,
-                        Currency = apiUser.Bank.Currency,
-                        Iban = apiUser.Bank.Iban,
-                        BankName = apiUser.Bank.BankName
-                    };
-                    _context.Banks.Add(bank);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Créer et associer l'entreprise
-                if (apiUser.Company != null)
-                {
-                    var company = new Company
-                    {
-                        CompanyId = newUser.Id,  // Utiliser l'ID de l'utilisateur comme clé étrangère
-                        Name = apiUser.Company.Name,
-                        Title = apiUser.Company.Title,
-                        Department = apiUser.Company.Department
-                    };
-                    _context.Companies.Add(company);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Recharger l'utilisateur avec toutes ses relations
-                return await _context.Users
-                    .Include(u => u.Address)
-                        .ThenInclude(a => a.Coordinates)
-                    .Include(u => u.Bank)
-                    .Include(u => u.Company)
-                        .ThenInclude(c => c.Address)
-                    .FirstAsync(u => u.Id == newUser.Id);
+                Console.WriteLine($"Nombre d'utilisateurs reçus de l'API : {apiResponse.Users.Count}");
+                return apiResponse.Users;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de l'authentification de l'utilisateur: {Email}", email);
+                Console.WriteLine($"Erreur lors de la récupération des utilisateurs: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+        public async Task<User> AuthenticateUser(string email, string password)
+        {
+            try
+            {
+                Console.WriteLine($"Tentative d'authentification pour l'email: {email}");
+                var users = await GetUsersAsync();
+                var user = users.FirstOrDefault(u => u.Email == email);
+
+                if (user != null)
+                {
+                    Console.WriteLine("\n=== DONNÉES DE L'UTILISATEUR TROUVÉ DANS L'API ===");
+                    Console.WriteLine($"ID: {user.Id}");
+                    Console.WriteLine($"Email: {user.Email}");
+                    Console.WriteLine($"Prénom: {user.FirstName}");
+                    Console.WriteLine($"Nom: {user.LastName}");
+                    Console.WriteLine($"Genre: {user.Gender}");
+                    Console.WriteLine($"Téléphone: {user.Phone}");
+                    Console.WriteLine($"Image: {user.Image}");
+                    Console.WriteLine($"Date de naissance: {user.BirthDate}");
+                    Console.WriteLine($"Nom d'utilisateur: {user.Username}");
+
+                    if (user.Address != null)
+                    {
+                        Console.WriteLine("\n=== ADRESSE ===");
+                        Console.WriteLine($"Adresse: {user.Address.Address1 ?? "Non spécifiée"}");
+                        Console.WriteLine($"Ville: {user.Address.City ?? "Non spécifiée"}");
+                        Console.WriteLine($"Code postal: {user.Address.PostalCode ?? "Non spécifié"}");
+                        Console.WriteLine($"État: {user.Address.State ?? "Non spécifié"}");
+                        if (user.Address.Coordinates != null)
+                        {
+                            Console.WriteLine($"Coordonnées: {user.Address.Coordinates.Latitude}, {user.Address.Coordinates.Longitude}");
+                        }
+                    }
+
+                    if (user.Bank != null)
+                    {
+                        Console.WriteLine("\n=== INFORMATIONS BANCAIRES ===");
+                        Console.WriteLine($"Carte: {user.Bank.CardNumber}");
+                        Console.WriteLine($"Type: {user.Bank.CardType}");
+                        Console.WriteLine($"Expiration: {user.Bank.CardExpire}");
+                        Console.WriteLine($"IBAN: {user.Bank.Iban}");
+                    }
+
+                    if (user.Company != null)
+                    {
+                        Console.WriteLine("\n=== ENTREPRISE ===");
+                        Console.WriteLine($"Nom: {user.Company.Name}");
+                        Console.WriteLine($"Département: {user.Company.Department}");
+                        Console.WriteLine($"Titre: {user.Company.Title}");
+                        Console.WriteLine($"Adresse: {user.Company.Address?.Address1 ?? "Non spécifiée"}");
+                    }
+
+                    Console.WriteLine("\n=== CRÉATION DE L'UTILISATEUR DANS LA BASE LOCALE ===");
+                    Console.WriteLine("Données de l'utilisateur à créer:");
+                    Console.WriteLine($"- Email: {user.Email}");
+                    Console.WriteLine($"- Nom: {user.LastName}");
+                    Console.WriteLine($"- Prénom: {user.FirstName}");
+                    Console.WriteLine($"- Image: {user.Image ?? "default-avatar.png"}");
+                    Console.WriteLine($"- Role: Client");
+
+                    var newUser = new User
+                    {
+                        Email = user.Email,
+                        MotDePasse = password,
+                        Nom = user.LastName,
+                        Prenom = user.FirstName,
+                        DateInscription = DateTime.Now,
+                        DerniereConnexion = DateTime.Now,
+                        EstActif = true,
+                        InscritNewsletter = false,
+                        NotificationsEmail = false,
+                        Image = user.Image ?? "default-avatar.png",
+                        Role = RoleUtilisateur.Client
+                    };
+
+                    Console.WriteLine("Ajout de l'utilisateur au contexte...");
+                    _context.Users.Add(newUser);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("Nouvel utilisateur créé dans la base locale avec succès");
+
+                    if (user.Address != null)
+                    {
+                        Console.WriteLine("\n=== CRÉATION DE L'ADRESSE ===");
+                        Console.WriteLine("Données de l'adresse à créer:");
+                        Console.WriteLine($"- Address1: {user.Address.Address1 ?? "Non spécifiée"}");
+                        Console.WriteLine($"- City: {user.Address.City ?? "Non spécifiée"}");
+                        Console.WriteLine($"- PostalCode: {user.Address.PostalCode ?? "00000"}");
+                        Console.WriteLine($"- State: {user.Address.State ?? "Non spécifiée"}");
+                        Console.WriteLine($"- UserId: {newUser.Id}");
+
+                        var address = new Address
+                        {
+                            Address1 = user.Address.Address1 ?? "Non spécifiée",
+                            City = user.Address.City ?? "Non spécifiée",
+                            PostalCode = user.Address.PostalCode ?? "00000",
+                            State = user.Address.State ?? "Non spécifiée",
+                            UserId = newUser.Id
+                        };
+
+                        Console.WriteLine("Ajout de l'adresse au contexte...");
+                        _context.Addresses.Add(address);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine("Adresse créée avec succès");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\n=== CRÉATION DE L'ADRESSE PAR DÉFAUT ===");
+                        var defaultAddress = new Address
+                        {
+                            Address1 = "Non spécifiée",
+                            City = "Non spécifiée",
+                            PostalCode = "00000",
+                            State = "Non spécifiée",
+                            UserId = newUser.Id
+                        };
+
+                        Console.WriteLine("Ajout de l'adresse par défaut au contexte...");
+                        _context.Addresses.Add(defaultAddress);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine("Adresse par défaut créée avec succès");
+                    }
+
+                    Console.WriteLine("\n=== FIN DE LA CRÉATION DE L'UTILISATEUR ===");
+                    return newUser;
+                }
+
+                Console.WriteLine("\nUtilisateur non trouvé dans l'API");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nErreur lors de l'authentification de l'utilisateur: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner stack trace: {ex.InnerException.StackTrace}");
+                }
                 throw;
             }
         }

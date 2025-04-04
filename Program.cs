@@ -30,6 +30,14 @@ builder.Services.AddScoped<ProductApiService>();
 builder.Services.AddScoped<AuthApiService>();
 builder.Services.AddScoped<UserApiService>();
 
+// Ajouter la configuration de la session
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -53,6 +61,9 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Ajouter l'utilisation de la session
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

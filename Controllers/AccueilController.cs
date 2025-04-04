@@ -2,6 +2,7 @@
 using BoutiqueEnLigne.Services;
 using BoutiqueEnLigne.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BoutiqueEnLigne.Controllers
 {
@@ -68,6 +69,28 @@ namespace BoutiqueEnLigne.Controllers
             {
                 _logger.LogError(ex, "Erreur lors de la récupération des détails du produit {Id}", id);
                 return StatusCode(500, "Une erreur est survenue lors de la récupération des détails du produit.");
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AjouterAuPanier(int id)
+        {
+            try
+            {
+                var product = await _productApiService.GetProductByIdAsync(id);
+                if (product == null)
+                {
+                    return Json(new { success = false, message = "Produit non trouvé" });
+                }
+
+                // TODO: Implémenter la logique d'ajout au panier
+                return Json(new { success = true, message = "Produit ajouté au panier" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'ajout au panier du produit {Id}", id);
+                return Json(new { success = false, message = "Une erreur est survenue" });
             }
         }
     }

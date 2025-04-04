@@ -15,13 +15,14 @@
                 <div class="card-body p-3">
                     <div class="text-center mb-3">
                         <div class="position-relative d-inline-block">
-                            <img src="~/images/membre1.jpg" class="rounded-circle" alt="Photo de profil" style="width: 100px; height: 100px; object-fit: cover;">
+                            <img src="@(string.IsNullOrEmpty(Model.Image) ? "~/images/default-avatar.png" : Model.Image)" class="rounded-circle" alt="Photo de profil" style="width: 100px; height: 100px; object-fit: cover;">
                             <button class="btn btn-sm btn-light position-absolute bottom-0 end-0 rounded-circle p-2">
                                 <i class="bi bi-camera"></i>
                             </button>
                         </div>
                         <h5 class="mt-3 mb-1">@Model.Prenom @Model.Nom</h5>
                         <p class="text-muted small">@Model.Email</p>
+                        <span class="badge bg-primary">@Model.Role</span>
                     </div>
                     <div class="list-group list-group-flush">
                         <a asp-controller="GestionDuCompte" asp-action="Infospersonnelles" class="list-group-item list-group-item-action active">
@@ -66,6 +67,7 @@
 
                     <form asp-action="Infospersonnelles" method="post">
                         <div class="row g-3">
+                            <!-- Informations de base -->
                             <div class="col-md-6">
                                 <label asp-for="Prenom" class="form-label">Prénom</label>
                                 <div class="input-group">
@@ -93,6 +95,49 @@
                                         <i class="bi bi-envelope"></i>
                                     </span>
                                     <input asp-for="Email" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <!-- Informations supplémentaires -->
+                            <div class="col-md-6">
+                                <label asp-for="DateInscription" class="form-label">Date d'inscription</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar"></i>
+                                    </span>
+                                    <input asp-for="DateInscription" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DerniereConnexion" class="form-label">Dernière connexion</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-clock-history"></i>
+                                    </span>
+                                    <input asp-for="DerniereConnexion" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Préférences -->
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input asp-for="InscritNewsletter" class="form-check-input" type="checkbox">
+                                    <label asp-for="InscritNewsletter" class="form-check-label">S'inscrire à la newsletter</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input asp-for="NotificationsEmail" class="form-check-input" type="checkbox">
+                                    <label asp-for="NotificationsEmail" class="form-check-label">Recevoir les notifications par email</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input asp-for="EstActif" class="form-check-input" type="checkbox">
+                                    <label asp-for="EstActif" class="form-check-label">Compte actif</label>
                                 </div>
                             </div>
 

@@ -1,156 +1,157 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
     Layout = "_Layout";
-    ViewBag.Title = "Mon panier";
+    ViewData["Title"] = "Panier";
+    
+    // Debug: Afficher le contenu du ViewBag
+    var panierDebug = Context.Session.GetString("Panier");
+    System.Diagnostics.Debug.WriteLine($"Contenu du panier dans la vue: {panierDebug}");
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Mon panier</h1>
-                <a asp-controller="GestionDuCompte" asp-action="Infospersonnelles" class="btn btn-outline-primary">
-                    <i class="bi bi-arrow-left me-2"></i>Retour à mon profil
-                </a>
-            </div>
-        </div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Votre Panier</h2>
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Continuer les achats
+        </a>
     </div>
 
-    <div class="row">
-        <!-- Liste des produits -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <!-- Produit 1 -->
-                    <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
-                        <img src="~/images/produit1.jpg" alt="Produit 1" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
-                        <div class="flex-grow-1 ms-4">
-                            <h5 class="mb-1">Nom du produit 1</h5>
-                            <p class="text-muted mb-2">Référence: #12345</p>
-                            <div class="d-flex align-items-center">
-                                <div class="input-group" style="width: 120px;">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
-                                    <input type="text" class="form-control text-center" value="1">
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
+    @if (ViewBag.Items != null && ViewBag.Items.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Prix</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ViewBag.Items)
+                    {
+                        <tr>
+                            <td>@item["Nom"].GetString()</td>
+                            <td>@item["Prix"].GetDecimal().ToString("C")</td>
+                            <td>
+                                <div class="input-group" style="max-width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="modifierQuantite(@item["ProduitId"].GetInt32(), -1)">-</button>
+                                    <input type="text" class="form-control text-center" value="@item["Quantite"].GetInt32()" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="modifierQuantite(@item["ProduitId"].GetInt32(), 1)">+</button>
                                 </div>
-                                <span class="ms-3 text-primary fw-bold">49.99 €</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-link text-danger p-0 ms-3">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-
-                    <!-- Produit 2 -->
-                    <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
-                        <img src="~/images/produit2.jpg" alt="Produit 2" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
-                        <div class="flex-grow-1 ms-4">
-                            <h5 class="mb-1">Nom du produit 2</h5>
-                            <p class="text-muted mb-2">Référence: #12346</p>
-                            <div class="d-flex align-items-center">
-                                <div class="input-group" style="width: 120px;">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
-                                    <input type="text" class="form-control text-center" value="2">
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
-                                </div>
-                                <span class="ms-3 text-primary fw-bold">79.99 €</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-link text-danger p-0 ms-3">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-
-                    <!-- Produit 3 -->
-                    <div class="d-flex align-items-center">
-                        <img src="~/images/produit3.jpg" alt="Produit 3" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
-                        <div class="flex-grow-1 ms-4">
-                            <h5 class="mb-1">Nom du produit 3</h5>
-                            <p class="text-muted mb-2">Référence: #12347</p>
-                            <div class="d-flex align-items-center">
-                                <div class="input-group" style="width: 120px;">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
-                                    <input type="text" class="form-control text-center" value="1">
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
-                                </div>
-                                <span class="ms-3 text-primary fw-bold">29.99 €</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-link text-danger p-0 ms-3">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Code promo -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Code promo</h5>
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Entrez votre code promo">
-                        <button class="btn btn-primary">Appliquer</button>
-                    </div>
-                </div>
-            </div>
+                            </td>
+                            <td>@((item["Prix"].GetDecimal() * item["Quantite"].GetInt32()).ToString("C"))</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="supprimerDuPanier(@item["ProduitId"].GetInt32())">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total</strong></td>
+                        <td><strong>@ViewBag.Total.ToString("C")</strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
 
-        <!-- Résumé de la commande -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Résumé de la commande</h5>
-                    
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Sous-total</span>
-                        <span>159.97 €</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Livraison</span>
-                        <span>Gratuit</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Taxes</span>
-                        <span>31.99 €</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-4">
-                        <strong>Total</strong>
-                        <strong class="text-primary">191.96 €</strong>
-                    </div>
-
-                    <a asp-controller="Paiement" asp-action="Paiement" class="btn btn-primary w-100 mb-3">
-                        <i class="bi bi-lock me-2"></i>Procéder au paiement
-                    </a>
-
-                    <div class="text-center">
-                        <p class="text-muted small mb-0">
-                            <i class="bi bi-shield-check me-1"></i>
-                            Paiement sécurisé
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Garanties -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="bi bi-truck text-primary me-2"></i>
-                        <span>Livraison gratuite</span>
-                    </div>
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="bi bi-arrow-repeat text-primary me-2"></i>
-                        <span>Retours gratuits</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-shield-check text-primary me-2"></i>
-                        <span>Paiement sécurisé</span>
-                    </div>
-                </div>
-            </div>
+        <div class="d-flex justify-content-end mt-4">
+            <form id="passerCommandeForm" method="post">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-credit-card"></i> Procéder au paiement
+                </button>
+            </form>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Votre panier est vide.  
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        function modifierQuantite(produitId, delta) {
+            fetch('/GestionDuCompte/ModifierQuantite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ produitId: produitId, delta: delta })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la modification de la quantité');
+            });
+        }
+
+        function supprimerDuPanier(produitId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet article du panier ?')) {
+                fetch('/GestionDuCompte/SupprimerDuPanier', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ produitId: produitId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la suppression du produit');
+                });
+            }
+        }
+
+        // Gérer la soumission du formulaire de commande
+        document.getElementById('passerCommandeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch('/GestionDuCompte/PasserCommande', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirection vers la page de paiement
+                    window.location.href = data.redirectTo;
+                } else {
+                    // Afficher le message d'erreur
+                    alert(data.message);
+                    // Si une redirection est spécifiée, rediriger
+                    if (data.redirectTo) {
+                        window.location.href = data.redirectTo;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors du traitement de votre commande');
+            });
+        });
+    </script>
+} 

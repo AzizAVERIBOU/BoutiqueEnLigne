@@ -38,7 +38,6 @@
                     <img src="@product.Image" class="card-img-top" alt="@product.Nom">
                     <div class="card-body">
                         <h5 class="card-title">@product.Nom</h5>
-                        <p class="card-text">@product.Description</p>
                         <p class="card-text">
                             <small class="text-muted">Marque: @product.Marque</small>
                         </p>
@@ -53,9 +52,17 @@
                             <small class="text-muted">Note: @product.Note/5</small>
                         </p>
                         <div class="mt-3">
-                            <a asp-controller="Accueil" asp-action="Details" asp-route-id="@product.ProduitId" class="btn btn-primary">
-                                <i class="bi bi-info-circle me-2"></i>Détails
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Accueil" asp-action="Details" asp-route-id="@product.ProduitId" class="btn btn-primary">
+                                    <i class="bi bi-info-circle me-2"></i>Détails
+                                </a>
+                                <button class="btn btn-success ajouter-au-panier" 
+                                        data-produit-id="@product.ProduitId"
+                                        data-nom="@product.Nom"
+                                        data-prix="@product.Prix">
+                                    <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -102,4 +109,88 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.ajouter-au-panier').click(function() {
+                var button = $(this);
+                var produitId = button.data('produit-id');
+                var nom = button.data('nom');
+                var prix = button.data('prix');
+
+                $.ajax({
+                    url: '/GestionDuCompte/AjouterAuPanier',
+                    type: 'POST',
+                    data: {
+                        produitId: produitId,
+                        nom: nom,
+                        prix: prix
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Créer et afficher le toast
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                '<strong class="me-auto">Succès</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' + response.message + '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
+                        } else {
+                            // Afficher une notification d'erreur
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                                '<strong class="me-auto">Erreur</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' + response.message + '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
+                        }
+                    },
+                    error: function() {
+                        // Afficher une notification d'erreur
+                        var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="toast-header">' +
+                            '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                            '<strong class="me-auto">Erreur</strong>' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">Une erreur est survenue lors de l\'ajout au panier</div>' +
+                            '</div>');
+
+                        $('.toast-container').append(toast);
+                        var bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+
+                        // Supprimer le toast après qu'il soit fermé
+                        toast.on('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
 

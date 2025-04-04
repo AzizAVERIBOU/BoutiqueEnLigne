@@ -1,58 +1,36 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@using System.Text.Json
+@using BoutiqueEnLigne.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-<nav class="navbar navbar-expand-lg navbar-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
         <!-- Logo -->
-        <a class="navbar-brand" href="/">
-            <i class="bi bi-shop"></i> A&M Store
+        <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+            <i class="bi bi-shop"></i> BoutiqueEnLigne
         </a>
 
         <!-- Bouton toggle pour mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Menu principal -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- Menu de gauche -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">
                         <i class="bi bi-house"></i> Accueil
                     </a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Categories">
                         <i class="bi bi-grid"></i> Catégories
                     </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/Produit/Categories/Electronique">
-                            <i class="bi bi-laptop"></i> Électronique
-                        </a></li>
-                        <li><a class="dropdown-item" href="/Produit/Categories/Vetements">
-                            <i class="bi bi-tshirt"></i> Vêtements
-                        </a></li>
-                        <li><a class="dropdown-item" href="/Produit/Categories/Maison">
-                            <i class="bi bi-house-heart"></i> Maison
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/Produit/Categories">
-                            <i class="bi bi-grid-3x3"></i> Toutes les catégories
-                        </a></li>
-                    </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/Produit/Nouveautes">
-                        <i class="bi bi-star"></i> Nouveautés
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/Produit/Promotions">
-                        <i class="bi bi-tag"></i> Promotions
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Autres" asp-action="APropos">
-                        <i class="bi bi-info-circle me-1"></i>À propos
+                    <a class="nav-link" asp-controller="Home" asp-action="APropos">
+                        <i class="bi bi-info-circle"></i> À propos
                     </a>
                 </li>
             </ul>
@@ -74,32 +52,103 @@
             <!-- Menu utilisateur -->
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i> Mon Compte
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/GestionDuCompte/Connexion">
-                            <i class="bi bi-box-arrow-in-right"></i> Connexion
-                        </a></li>
-                        <li><a class="dropdown-item" href="/GestionDuCompte/Inscription">
-                            <i class="bi bi-person-plus"></i> Inscription
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/GestionDuCompte/Infospersonnelles">
-                            <i class="bi bi-person"></i> Mon Profil
-                        </a></li>
-                        <li><a class="dropdown-item" href="/GestionDuCompte/Commandes">
-                            <i class="bi bi-bag"></i> Mes Commandes
-                        </a></li>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="InformationsPersonnelles">Informations Personnelles</a></li>
+                            <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="Deconnexion">Déconnexion</a></li>
+                        }
+                        else
+                        {
+                            <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="Connexion">Connexion</a></li>
+                            <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="Inscription">Inscription</a></li>
+                        }
                     </ul>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="/Paiement/Panier">
-                        <i class="bi bi-cart3"></i>
-                        <span class="badge bg-primary rounded-pill">0</span>
+                    <a class="nav-link" asp-controller="GestionDuCompte" asp-action="Panier">
+                        <i class="bi bi-cart"></i> Panier
+                        @{
+                            var panier = Context.Session.GetString("Panier");
+                            var items = string.IsNullOrEmpty(panier) ? new List<Dictionary<string, JsonElement>>() : 
+                                System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panier);
+                            var nombreArticles = items.Sum(i => i["Quantite"].GetInt32());
+                            if (nombreArticles > 0)
+                            {
+                                <span class="badge bg-danger rounded-pill">@nombreArticles</span>
+                            }
+                        }
                     </a>
                 </li>
             </ul>
         </div>
     </div>
-</nav> 
+</nav>
+
+<style>
+    .navbar {
+        box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+
+    .navbar-brand {
+        font-weight: bold;
+    }
+
+    .nav-link {
+        position: relative;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-link i {
+        margin-right: 0.5rem;
+    }
+
+    .badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(50%, -50%);
+    }
+
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+    }
+
+    .dropdown-item i {
+        margin-right: 0.5rem;
+    }
+
+    @@media (max-width: 991.98px) {
+        .navbar-collapse {
+            padding: 1rem 0;
+        }
+
+        .navbar-nav {
+            margin-bottom: 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: none;
+            padding-left: 1rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/panier.js"></script>
+}
+
