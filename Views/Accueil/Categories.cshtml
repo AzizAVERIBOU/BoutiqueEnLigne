@@ -19,7 +19,7 @@
                         </p>
                         <div class="mt-3">
                             <a asp-controller="Accueil" 
-                               asp-action="Index" 
+                               asp-action="FiltreCategories" 
                                asp-route-categorie="@category.Nom" 
                                class="btn btn-primary voir-produits"
                                data-category="@category.Nom">
@@ -41,7 +41,7 @@
                 console.log('Catégorie sélectionnée:', category);
                 
                 // Vérifier que l'URL est correctement construite
-                var url = '@Url.Action("Index", "Accueil")' + '?categorie=' + encodeURIComponent(category);
+                var url = '@Url.Action("FiltreCategories", "Accueil")' + '?categorie=' + encodeURIComponent(category);
                 console.log('URL de redirection:', url);
                 
                 // Redirection manuelle pour débogage

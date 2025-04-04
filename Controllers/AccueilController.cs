@@ -127,5 +127,105 @@ namespace BoutiqueEnLigne.Controllers
                 return Json(new { success = false, message = "Une erreur est survenue lors de l'ajout au panier" });
             }
         }
+
+        public async Task<IActionResult> Categories()
+        {
+            try
+            {
+                _logger.LogInformation("=== Début de l'action Categories ===");
+                
+                // Récupérer tous les produits
+                _logger.LogInformation("Récupération de tous les produits depuis l'API...");
+                var products = await _productApiService.GetProductsAsync(0, int.MaxValue);
+                _logger.LogInformation("Nombre total de produits récupérés: {Count}", products.Count);
+                
+                // Grouper par catégorie et compter le nombre de produits
+                _logger.LogInformation("Groupement des produits par catégorie...");
+                var categories = products
+                    .GroupBy(p => p.Categorie)
+                    .Select(g => new CategoryViewModel
+                    {
+                        Nom = g.Key,
+                        NombreProduits = g.Count()
+                    })
+                    .OrderBy(c => c.Nom)
+                    .ToList();
+
+                _logger.LogInformation("Nombre de catégories trouvées: {Count}", categories.Count);
+                foreach (var category in categories)
+                {
+                    _logger.LogInformation("Catégorie: {Nom}, Nombre de produits: {NombreProduits}", 
+                        category.Nom, category.NombreProduits);
+                }
+
+                _logger.LogInformation("=== Fin de l'action Categories ===");
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de la récupération des catégories");
+                _logger.LogError("Détails de l'erreur: {Message}", ex.Message);
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError("Exception interne: {Message}", ex.InnerException.Message);
+                }
+                return View(new List<CategoryViewModel>());
+            }
+        }
+
+        public async Task<IActionResult> FiltreCategories(string categorie, int page = 1)
+        {
+            try
+            {
+                _logger.LogInformation("=== Début de l'action FiltreCategories ===");
+                _logger.LogInformation("Catégorie sélectionnée: {Categorie}, Page: {Page}", categorie, page);
+
+                const int productsPerPage = 24;
+                var skip = (page - 1) * productsPerPage;
+
+                // Récupérer tous les produits
+                _logger.LogInformation("Récupération des produits depuis l'API...");
+                var allProducts = await _productApiService.GetProductsAsync(0, int.MaxValue);
+                
+                // Filtrer par catégorie
+                var filteredProducts = allProducts
+                    .Where(p => p.Categorie.Equals(categorie, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                _logger.LogInformation("Nombre total de produits dans la catégorie {Categorie}: {Count}", 
+                    categorie, filteredProducts.Count);
+
+                // Pagination
+                var products = filteredProducts
+                    .Skip(skip)
+                    .Take(productsPerPage)
+                    .ToList();
+
+                var totalPages = (int)Math.Ceiling(filteredProducts.Count / (double)productsPerPage);
+
+                var viewModel = new AccueilViewModel
+                {
+                    Products = products,
+                    CurrentPage = page,
+                    TotalPages = totalPages,
+                    ProductsPerPage = productsPerPage,
+                    TotalProducts = filteredProducts.Count,
+                    CategorieActuelle = categorie
+                };
+
+                _logger.LogInformation("=== Fin de l'action FiltreCategories ===");
+                return View("Index", viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du filtrage des produits par catégorie");
+                _logger.LogError("Détails de l'erreur: {Message}", ex.Message);
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError("Exception interne: {Message}", ex.InnerException.Message);
+                }
+                return View("Index", new AccueilViewModel { Products = new List<Product>() });
+            }
+        }
     }
 }

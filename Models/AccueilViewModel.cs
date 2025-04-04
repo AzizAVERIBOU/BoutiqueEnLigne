@@ -9,5 +9,6 @@ namespace BoutiqueEnLigne.Models
         public int TotalPages { get; set; }
         public int ProductsPerPage { get; set; }
         public int TotalProducts { get; set; }
+        public string CategorieActuelle { get; set; }
     }
 } 
