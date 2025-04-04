@@ -1,0 +1,52 @@
+@model List<BoutiqueEnLigne.Models.CategoryViewModel>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Catégories";
+}
+
+<div class="container py-5">
+    <h1 class="display-4 mb-4">Nos catégories de produits</h1>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var category in Model)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@category.Nom</h5>
+                        <p class="card-text">
+                            <span class="badge bg-primary">@category.NombreProduits produits</span>
+                        </p>
+                        <div class="mt-3">
+                            <a asp-controller="Accueil" 
+                               asp-action="Index" 
+                               asp-route-categorie="@category.Nom" 
+                               class="btn btn-primary voir-produits"
+                               data-category="@category.Nom">
+                                <i class="bi bi-eye me-2"></i>Voir les produits
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.voir-produits').click(function(e) {
+                var category = $(this).data('category');
+                console.log('Catégorie sélectionnée:', category);
+                
+                // Vérifier que l'URL est correctement construite
+                var url = '@Url.Action("Index", "Accueil")' + '?categorie=' + encodeURIComponent(category);
+                console.log('URL de redirection:', url);
+                
+                // Redirection manuelle pour débogage
+                window.location.href = url;
+            });
+        });
+    </script>
+} 

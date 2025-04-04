@@ -70,6 +70,22 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link" asp-controller="GestionDuCompte" asp-action="Favoris">
+                        <i class="bi bi-heart"></i> Favoris
+                        @{
+                            var favoris = Context.Session.GetString("Favoris");
+                            var itemsFavoris = string.IsNullOrEmpty(favoris) ? new List<Dictionary<string, JsonElement>>() : 
+                                System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(favoris);
+                            var nombreFavoris = itemsFavoris.Count;
+                            if (nombreFavoris > 0)
+                            {
+                                <span class="badge bg-danger rounded-pill">@nombreFavoris</span>
+                            }
+                        }
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link" asp-controller="GestionDuCompte" asp-action="Panier">
                         <i class="bi bi-cart"></i> Panier
                         @{

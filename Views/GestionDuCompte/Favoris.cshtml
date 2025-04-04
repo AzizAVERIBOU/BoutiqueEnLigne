@@ -1,0 +1,83 @@
+@model BoutiqueEnLigne.Models.FavorisViewModel
+@{
+    ViewData["Title"] = "Mes Favoris";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-4">Mes Favoris</h1>
+                    <p class="lead">Retrouvez ici tous vos produits favoris</p>
+                </div>
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Continuer les achats
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>Vous n'avez pas encore de produits favoris.
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            @foreach (var item in Model.Items)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@item["Image"].GetString()" class="card-img-top" alt="@item["Nom"].GetString()">
+                        <div class="card-body">
+                            <h5 class="card-title">@item["Nom"].GetString()</h5>
+                            <p class="card-text">
+                                <strong>Prix: @item["Prix"].GetDecimal().ToString("C")</strong>
+                            </p>
+                            <div class="mt-3">
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Accueil" asp-action="Details" asp-route-id="@item["ProduitId"].GetInt32()" class="btn btn-primary">
+                                        <i class="bi bi-info-circle me-2"></i>Détails
+                                    </a>
+                                    <button class="btn btn-danger retirer-favoris" data-produit-id="@item["ProduitId"].GetInt32()">
+                                        <i class="bi bi-heart-fill me-2"></i>Retirer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.retirer-favoris').click(function() {
+                var produitId = $(this).data('produit-id');
+                
+                $.ajax({
+                    url: '@Url.Action("RetirerDesFavoris", "GestionDuCompte")',
+                    type: 'POST',
+                    data: { id: produitId },
+                    success: function(response) {
+                        if (response.success) {
+                            // Recharger la page pour mettre à jour l'affichage
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+} 

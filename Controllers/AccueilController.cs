@@ -3,6 +3,8 @@ using BoutiqueEnLigne.Services;
 using BoutiqueEnLigne.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BoutiqueEnLigne.Controllers
 {
@@ -74,23 +76,55 @@ namespace BoutiqueEnLigne.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AjouterAuPanier(int id)
+        public async Task<IActionResult> AjouterAuPanier(int id, string nom, decimal prix, string image)
         {
             try
             {
-                var product = await _productApiService.GetProductByIdAsync(id);
-                if (product == null)
+                _logger.LogInformation("Début de l'ajout au panier - Produit ID: {Id}, Nom: {Nom}, Prix: {Prix}", id, nom, prix);
+
+                // Récupérer le panier actuel depuis la session
+                var panierJson = HttpContext.Session.GetString("Panier");
+                _logger.LogInformation("Panier actuel (JSON): {PanierJson}", panierJson);
+
+                var panier = string.IsNullOrEmpty(panierJson) 
+                    ? new List<Dictionary<string, JsonElement>>() 
+                    : JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panierJson);
+
+                _logger.LogInformation("Nombre d'articles dans le panier avant ajout: {Count}", panier.Count);
+
+                // Vérifier si le produit est déjà dans le panier
+                var produitExistant = panier.FirstOrDefault(p => p["ProduitId"].GetInt32() == id);
+                if (produitExistant != null)
                 {
-                    return Json(new { success = false, message = "Produit non trouvé" });
+                    _logger.LogInformation("Produit déjà dans le panier, mise à jour de la quantité");
+                    var quantite = produitExistant["Quantite"].GetInt32() + 1;
+                    produitExistant["Quantite"] = JsonSerializer.SerializeToElement(quantite);
+                }
+                else
+                {
+                    _logger.LogInformation("Ajout d'un nouveau produit au panier");
+                    var nouveauProduit = new Dictionary<string, JsonElement>
+                    {
+                        ["ProduitId"] = JsonSerializer.SerializeToElement(id),
+                        ["Nom"] = JsonSerializer.SerializeToElement(nom),
+                        ["Prix"] = JsonSerializer.SerializeToElement(prix),
+                        ["Image"] = JsonSerializer.SerializeToElement(image),
+                        ["Quantite"] = JsonSerializer.SerializeToElement(1)
+                    };
+                    panier.Add(nouveauProduit);
                 }
 
-                // TODO: Implémenter la logique d'ajout au panier
+                // Sauvegarder le panier mis à jour dans la session
+                var nouveauPanierJson = JsonSerializer.Serialize(panier);
+                HttpContext.Session.SetString("Panier", nouveauPanierJson);
+                _logger.LogInformation("Panier mis à jour avec succès - Nombre d'articles: {Count}", panier.Count);
+
                 return Json(new { success = true, message = "Produit ajouté au panier" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de l'ajout au panier du produit {Id}", id);
-                return Json(new { success = false, message = "Une erreur est survenue" });
+                _logger.LogError(ex, "Erreur lors de l'ajout au panier - Produit ID: {Id}", id);
+                return Json(new { success = false, message = "Une erreur est survenue lors de l'ajout au panier" });
             }
         }
     }

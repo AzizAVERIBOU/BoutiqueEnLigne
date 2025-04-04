@@ -1,0 +1,34 @@
+@using BoutiqueEnLigne.Services
+@using BoutiqueEnLigne.Models
+@inject ProductApiService _productApiService
+
+@{
+    var products = await _productApiService.GetProductsAsync(0, int.MaxValue);
+    var categories = products
+        .GroupBy(p => p.Categorie)
+        .Select(g => new CategoryViewModel
+        {
+            Nom = g.Key,
+            NombreProduits = g.Count()
+        })
+        .OrderBy(c => c.Nom)
+        .ToList();
+}
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-grid"></i> Catégories
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+        <li><a class="dropdown-item" asp-controller="Accueil" asp-action="Categories">Toutes les catégories</a></li>
+        <li><hr class="dropdown-divider"></li>
+        @foreach (var category in categories)
+        {
+            <li>
+                <a class="dropdown-item" asp-controller="Accueil" asp-action="Index" asp-route-categorie="@category.Nom">
+                    @category.Nom <span class="badge bg-primary float-end">@category.NombreProduits</span>
+                </a>
+            </li>
+        }
+    </ul>
+</li> 

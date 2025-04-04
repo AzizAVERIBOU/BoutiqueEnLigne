@@ -8,7 +8,7 @@
 <div class="container py-5">
     <!-- Bouton Retour -->
     <div class="mb-4">
-        <a asp-controller="Accueil" asp-action="Index" class="btn btn-outline-secondary">
+        <a href="/" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>Retour à la liste
         </a>
     </div>
@@ -82,10 +82,18 @@
             }
 
             <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-lg">
+                <button class="btn btn-primary btn-lg ajouter-au-panier" 
+                        data-produit-id="@Model.ProduitId"
+                        data-nom="@Model.Nom"
+                        data-prix="@Model.Prix"
+                        data-image="@Model.Image">
                     <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
                 </button>
-                <button class="btn btn-outline-primary">
+                <button class="btn btn-outline-primary ajouter-aux-favoris" 
+                        data-produit-id="@Model.ProduitId"
+                        data-nom="@Model.Nom"
+                        data-prix="@Model.Prix"
+                        data-image="@Model.Image">
                     <i class="bi bi-heart me-2"></i>Ajouter aux favoris
                 </button>
             </div>
@@ -108,6 +116,242 @@
         // Initialisation du carousel
         var myCarousel = new bootstrap.Carousel(document.getElementById('productCarousel'), {
             interval: 5000
+        });
+
+        // Gestion de l'ajout au panier
+        $(document).ready(function() {
+            console.log('Page Details chargée - Script d\'ajout au panier initialisé');
+
+            $('.ajouter-au-panier').click(function() {
+                console.log('Bouton Ajouter au panier cliqué');
+                
+                var produitId = $(this).data('produit-id');
+                var nom = $(this).data('nom');
+                var prix = $(this).data('prix');
+                var image = $(this).data('image');
+
+                console.log('Données du produit:', {
+                    id: produitId,
+                    nom: nom,
+                    prix: prix,
+                    image: image
+                });
+
+                $.ajax({
+                    url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
+                    type: 'POST',
+                    data: { 
+                        produitId: produitId,
+                        nom: nom,
+                        prix: prix,
+                        image: image
+                    },
+                    beforeSend: function() {
+                        console.log('Envoi de la requête AJAX...');
+                    },
+                    success: function(response) {
+                        console.log('Réponse reçue:', response);
+                        
+                        if (response.success) {
+                            console.log('Produit ajouté avec succès');
+                            
+                            // Créer un toast de succès
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                '<strong class="me-auto">Succès</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' +
+                                'Le produit a été ajouté au panier avec succès.' +
+                                '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+                            console.log('Toast de succès affiché');
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                console.log('Toast fermé');
+                                toast.remove();
+                            });
+
+                            // Mettre à jour le compteur du panier dans la navbar
+                            var badge = $('.nav-link[href*="Panier"] .badge');
+                            var currentCount = parseInt(badge.text()) || 0;
+                            badge.text(currentCount + 1);
+                            console.log('Compteur du panier mis à jour:', currentCount + 1);
+                        } else {
+                            console.error('Erreur dans la réponse:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+
+                        // Créer un toast d'erreur
+                        var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="toast-header">' +
+                            '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                            '<strong class="me-auto">Erreur</strong>' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">' +
+                            'Une erreur est survenue lors de l\'ajout au panier.' +
+                            '</div>' +
+                            '</div>');
+
+                        $('.toast-container').append(toast);
+                        var bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+                        console.log('Toast d\'erreur affiché');
+
+                        // Supprimer le toast après qu'il soit fermé
+                        toast.on('hidden.bs.toast', function() {
+                            console.log('Toast d\'erreur fermé');
+                            toast.remove();
+                        });
+                    },
+                    complete: function() {
+                        console.log('Requête AJAX terminée');
+                    }
+                });
+            });
+
+            // Gestion de l'ajout aux favoris
+            $('.ajouter-aux-favoris').click(function() {
+                console.log('Bouton Ajouter aux favoris cliqué');
+                
+                var produitId = $(this).data('produit-id');
+                var nom = $(this).data('nom');
+                var prix = $(this).data('prix');
+                var image = $(this).data('image');
+
+                console.log('Données du produit:', {
+                    id: produitId,
+                    nom: nom,
+                    prix: prix,
+                    image: image
+                });
+
+                $.ajax({
+                    url: '@Url.Action("AjouterAuxFavoris", "GestionDuCompte")',
+                    type: 'POST',
+                    data: { 
+                        produitId: produitId,
+                        nom: nom,
+                        prix: prix,
+                        image: image
+                    },
+                    beforeSend: function() {
+                        console.log('Envoi de la requête AJAX...');
+                    },
+                    success: function(response) {
+                        console.log('Réponse reçue:', response);
+                        
+                        if (response.success) {
+                            console.log('Produit ajouté aux favoris avec succès');
+                            
+                            // Créer un toast de succès
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                '<strong class="me-auto">Succès</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' +
+                                'Le produit a été ajouté aux favoris avec succès.' +
+                                '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+                            console.log('Toast de succès affiché');
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                console.log('Toast fermé');
+                                toast.remove();
+                            });
+
+                            // Mettre à jour le compteur des favoris dans la navbar
+                            var badge = $('.nav-link[href*="Favoris"] .badge');
+                            var currentCount = parseInt(badge.text()) || 0;
+                            if (currentCount === 0) {
+                                var newBadge = $('<span class="badge bg-danger rounded-pill">1</span>');
+                                $('.nav-link[href*="Favoris"]').append(newBadge);
+                            } else {
+                                badge.text(currentCount + 1);
+                            }
+                            console.log('Compteur des favoris mis à jour');
+                        } else {
+                            console.error('Erreur dans la réponse:', response.message);
+                            
+                            // Créer un toast d'erreur
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                                '<strong class="me-auto">Erreur</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' +
+                                response.message +
+                                '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+                            console.log('Toast d\'erreur affiché');
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                console.log('Toast d\'erreur fermé');
+                                toast.remove();
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+
+                        // Créer un toast d'erreur
+                        var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="toast-header">' +
+                            '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                            '<strong class="me-auto">Erreur</strong>' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">' +
+                            'Une erreur est survenue lors de l\'ajout aux favoris.' +
+                            '</div>' +
+                            '</div>');
+
+                        $('.toast-container').append(toast);
+                        var bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+                        console.log('Toast d\'erreur affiché');
+
+                        // Supprimer le toast après qu'il soit fermé
+                        toast.on('hidden.bs.toast', function() {
+                            console.log('Toast d\'erreur fermé');
+                            toast.remove();
+                        });
+                    },
+                    complete: function() {
+                        console.log('Requête AJAX terminée');
+                    }
+                });
+            });
         });
     </script>
 } 

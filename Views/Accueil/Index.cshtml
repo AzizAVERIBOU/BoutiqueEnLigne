@@ -62,6 +62,13 @@
                                         data-prix="@product.Prix">
                                     <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
                                 </button>
+                                <button class="btn btn-outline-primary ajouter-aux-favoris" 
+                                        data-produit-id="@product.ProduitId"
+                                        data-nom="@product.Nom"
+                                        data-prix="@product.Prix"
+                                        data-image="@product.Image">
+                                    <i class="bi bi-heart me-2"></i>Favoris
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -120,7 +127,7 @@
                 var prix = button.data('prix');
 
                 $.ajax({
-                    url: '/GestionDuCompte/AjouterAuPanier',
+                    url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
                     type: 'POST',
                     data: {
                         produitId: produitId,
@@ -177,6 +184,97 @@
                             '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
                             '</div>' +
                             '<div class="toast-body">Une erreur est survenue lors de l\'ajout au panier</div>' +
+                            '</div>');
+
+                        $('.toast-container').append(toast);
+                        var bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+
+                        // Supprimer le toast après qu'il soit fermé
+                        toast.on('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    }
+                });
+            });
+
+            // Gestion de l'ajout aux favoris
+            $('.ajouter-aux-favoris').click(function() {
+                var button = $(this);
+                var produitId = button.data('produit-id');
+                var nom = button.data('nom');
+                var prix = button.data('prix');
+                var image = button.data('image');
+
+                $.ajax({
+                    url: '@Url.Action("AjouterAuxFavoris", "GestionDuCompte")',
+                    type: 'POST',
+                    data: {
+                        produitId: produitId,
+                        nom: nom,
+                        prix: prix,
+                        image: image
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Créer et afficher le toast
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                '<strong class="me-auto">Succès</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' + response.message + '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
+
+                            // Mettre à jour le compteur des favoris dans la navbar
+                            var badge = $('.nav-link[href*="Favoris"] .badge');
+                            var currentCount = parseInt(badge.text()) || 0;
+                            if (currentCount === 0) {
+                                var newBadge = $('<span class="badge bg-danger rounded-pill">1</span>');
+                                $('.nav-link[href*="Favoris"]').append(newBadge);
+                            } else {
+                                badge.text(currentCount + 1);
+                            }
+                        } else {
+                            // Afficher une notification d'erreur
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                                '<strong class="me-auto">Erreur</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' + response.message + '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
+                        }
+                    },
+                    error: function() {
+                        // Afficher une notification d'erreur
+                        var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="toast-header">' +
+                            '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                            '<strong class="me-auto">Erreur</strong>' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">Une erreur est survenue lors de l\'ajout aux favoris</div>' +
                             '</div>');
 
                         $('.toast-container').append(toast);
