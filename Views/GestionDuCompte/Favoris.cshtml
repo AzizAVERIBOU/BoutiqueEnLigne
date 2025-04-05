@@ -46,7 +46,7 @@
                                     <button class="btn btn-success ajouter-au-panier" 
                                             data-produit-id="@item["ProduitId"].GetInt32()"
                                             data-nom="@item["Nom"].GetString()"
-                                            data-prix="@item["Prix"].GetDecimal()"
+                                            data-prix="@item["Prix"].GetDecimal().ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
                                             data-image="@item["Image"].GetString()">
                                         <i class="bi bi-cart-plus me-2"></i>Panier
                                     </button>
@@ -235,18 +235,23 @@
                 var produitId = button.data('produit-id');
                 var nom = button.data('nom');
                 var prix = button.data('prix');
-                var image = button.data('image');
+                var card = button.closest('.col');
 
                 // Convertir le prix en nombre
                 var prixNumerique = parseFloat(prix.toString().replace(',', '.'));
 
-                console.log('Données du produit (carte):', {
+                console.log('Données du produit:', {
                     id: produitId,
                     nom: nom,
-                    prix: prixNumerique,
-                    image: image
+                    prix: prix,
+                    prixNumerique: prixNumerique
                 });
 
+                // Désactiver le bouton pendant la requête
+                button.prop('disabled', true);
+                button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Ajout en cours...');
+
+                // Ajouter le produit au panier
                 $.ajax({
                     url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
                     type: 'POST',
@@ -254,11 +259,17 @@
                         produitId: produitId,
                         nom: nom,
                         prix: prixNumerique,
-                        image: image
+                        quantite: 1
                     },
                     success: function(response) {
                         console.log('Réponse AJAX:', response);
                         if (response.success) {
+                            // Ajouter une animation de succès
+                            card.addClass('border-success');
+                            setTimeout(function() {
+                                card.removeClass('border-success');
+                            }, 1000);
+
                             var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
                                 '<div class="toast-header">' +
                                 '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
@@ -308,6 +319,11 @@
                         toast.on('hidden.bs.toast', function() {
                             toast.remove();
                         });
+                    },
+                    complete: function() {
+                        // Réactiver le bouton
+                        button.prop('disabled', false);
+                        button.html('<i class="bi bi-cart-plus me-2"></i>Panier');
                     }
                 });
             });
@@ -315,23 +331,109 @@
             // Gestion du retrait des favoris
             $('.retirer-favoris').click(function() {
                 console.log('Bouton Retirer des favoris cliqué');
-                var produitId = $(this).data('produit-id');
+                var button = $(this);
+                var produitId = button.data('produit-id');
+                var card = button.closest('.col');
                 console.log('ID du produit à retirer:', produitId);
                 
-                $.ajax({
-                    url: '@Url.Action("RetirerDesFavoris", "GestionDuCompte")',
-                    type: 'POST',
-                    data: { id: produitId },
-                    success: function(response) {
-                        console.log('Réponse AJAX (retrait):', response);
-                        if (response.success) {
-                            location.reload();
+                // Afficher une confirmation
+                if (confirm('Êtes-vous sûr de vouloir retirer ce produit de vos favoris ?')) {
+                    // Désactiver le bouton pendant la requête
+                    button.prop('disabled', true);
+                    button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Retrait en cours...');
+
+                    $.ajax({
+                        url: '@Url.Action("RetirerDesFavoris", "GestionDuCompte")',
+                        type: 'POST',
+                        data: { id: produitId },
+                        success: function(response) {
+                            console.log('Réponse AJAX (retrait):', response);
+                            if (response.success) {
+                                // Ajouter une animation de fade out
+                                card.fadeOut(300, function() {
+                                    // Supprimer l'élément du DOM
+                                    $(this).remove();
+                                    
+                                    // Vérifier s'il reste des produits
+                                    if ($('.col').length === 0) {
+                                        // Afficher le message "Aucun favoris"
+                                        $('.row').html('<div class="alert alert-info">' +
+                                            '<i class="bi bi-info-circle me-2"></i>Vous n\'avez aucun produit dans vos favoris.' +
+                                            '</div>');
+                                    }
+
+                                    // Afficher un toast de succès
+                                    var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                        '<div class="toast-header">' +
+                                        '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                        '<strong class="me-auto">Succès</strong>' +
+                                        '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                        '</div>' +
+                                        '<div class="toast-body">Produit retiré des favoris avec succès</div>' +
+                                        '</div>');
+
+                                    $('.toast-container').append(toast);
+                                    var bsToast = new bootstrap.Toast(toast);
+                                    bsToast.show();
+
+                                    // Supprimer le toast après qu'il soit fermé
+                                    toast.on('hidden.bs.toast', function() {
+                                        toast.remove();
+                                    });
+                                });
+                            } else {
+                                // Réactiver le bouton en cas d'erreur
+                                button.prop('disabled', false);
+                                button.html('<i class="bi bi-heart-fill me-2"></i>Retirer');
+
+                                // Afficher un toast d'erreur
+                                var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                    '<div class="toast-header">' +
+                                    '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                                    '<strong class="me-auto">Erreur</strong>' +
+                                    '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                    '</div>' +
+                                    '<div class="toast-body">Une erreur est survenue lors du retrait des favoris</div>' +
+                                    '</div>');
+
+                                $('.toast-container').append(toast);
+                                var bsToast = new bootstrap.Toast(toast);
+                                bsToast.show();
+
+                                // Supprimer le toast après qu'il soit fermé
+                                toast.on('hidden.bs.toast', function() {
+                                    toast.remove();
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Erreur AJAX (retrait):', error);
+                            
+                            // Réactiver le bouton en cas d'erreur
+                            button.prop('disabled', false);
+                            button.html('<i class="bi bi-heart-fill me-2"></i>Retirer');
+
+                            // Afficher un toast d'erreur
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                                '<strong class="me-auto">Erreur</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">Une erreur est survenue lors du retrait des favoris</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Supprimer le toast après qu'il soit fermé
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Erreur AJAX (retrait):', error);
-                    }
-                });
+                    });
+                }
             });
         });
     </script>

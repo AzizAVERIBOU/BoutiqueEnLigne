@@ -915,5 +915,55 @@ namespace BoutiqueEnLigne.Controllers
                 return Json(new { success = false, message = "Erreur lors de l'ajout aux favoris" });
             }
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public IActionResult RetirerDesFavoris(int id)
+        {
+            _logger.LogInformation("=== Début de la méthode RetirerDesFavoris ===");
+            _logger.LogInformation("Produit à retirer: {Id}", id);
+
+            try
+            {
+                // Récupérer les favoris actuels
+                var favorisJson = HttpContext.Session.GetString("Favoris");
+                _logger.LogInformation("Contenu brut des favoris avant retrait: {Favoris}", favorisJson);
+
+                if (string.IsNullOrEmpty(favorisJson))
+                {
+                    _logger.LogWarning("Aucun favoris trouvé");
+                    return Json(new { success = false, message = "Aucun favoris trouvé" });
+                }
+
+                // Désérialiser les favoris
+                var favoris = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(favorisJson);
+                
+                // Trouver et retirer le produit
+                var produit = favoris.FirstOrDefault(f => f["ProduitId"].GetInt32() == id);
+                if (produit != null)
+                {
+                    favoris.Remove(produit);
+                    
+                    // Mettre à jour la session
+                    var newFavorisJson = JsonSerializer.Serialize(favoris);
+                    HttpContext.Session.SetString("Favoris", newFavorisJson);
+                    
+                    _logger.LogInformation("Contenu des favoris après retrait: {Favoris}", newFavorisJson);
+                    _logger.LogInformation("=== Fin de la méthode RetirerDesFavoris ===");
+                    
+                    return Json(new { success = true, message = "Produit retiré des favoris avec succès" });
+                }
+                else
+                {
+                    _logger.LogWarning("Produit non trouvé dans les favoris");
+                    return Json(new { success = false, message = "Produit non trouvé dans les favoris" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du retrait des favoris");
+                return Json(new { success = false, message = "Une erreur est survenue lors du retrait des favoris" });
+            }
+        }
     }
 }
