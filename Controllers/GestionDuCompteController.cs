@@ -558,12 +558,36 @@ namespace BoutiqueEnLigne.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult AjouterAuPanier(int produitId, string nom, decimal prix, int quantite = 1)
+        public IActionResult AjouterAuPanier(int produitId, string nom, string prix, int quantite = 1)
         {
             try
             {
                 Console.WriteLine("=== Début de la méthode AjouterAuPanier ===");
-                Console.WriteLine($"Paramètres: produitId={produitId}, nom={nom}, prix={prix}, quantite={quantite}");
+                Console.WriteLine($"Paramètres reçus:");
+                Console.WriteLine($"- produitId: {produitId}");
+                Console.WriteLine($"- nom: {nom}");
+                Console.WriteLine($"- prix (brut): {prix}");
+                Console.WriteLine($"- quantite: {quantite}");
+
+                // Convertir le prix en décimal
+                decimal prixDecimal;
+                string prixFormate = prix.Replace(',', '.');
+                Console.WriteLine($"Prix formaté (virgule remplacée par point): {prixFormate}");
+
+                if (!decimal.TryParse(prixFormate, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out prixDecimal))
+                {
+                    Console.WriteLine($"ERREUR: Impossible de convertir le prix '{prixFormate}' en décimal");
+                    return Json(new { 
+                        success = false, 
+                        message = "Format de prix invalide",
+                        debug = new {
+                            prixBrut = prix,
+                            prixFormate = prixFormate
+                        }
+                    });
+                }
+
+                Console.WriteLine($"Prix converti en décimal: {prixDecimal}");
 
                 var panier = HttpContext.Session.GetString("Panier");
                 Console.WriteLine($"Contenu brut du panier avant ajout: {panier}");
@@ -599,9 +623,10 @@ namespace BoutiqueEnLigne.Controllers
                     {
                         ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
                         ["Nom"] = JsonSerializer.SerializeToElement(nom),
-                        ["Prix"] = JsonSerializer.SerializeToElement(prix),
+                        ["Prix"] = JsonSerializer.SerializeToElement(prixDecimal),
                         ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite)
                     });
+                    Console.WriteLine($"Prix stocké pour le produit existant: {prixDecimal}");
                 }
                 else
                 {
@@ -610,9 +635,10 @@ namespace BoutiqueEnLigne.Controllers
                     {
                         ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
                         ["Nom"] = JsonSerializer.SerializeToElement(nom),
-                        ["Prix"] = JsonSerializer.SerializeToElement(prix),
+                        ["Prix"] = JsonSerializer.SerializeToElement(prixDecimal),
                         ["Quantite"] = JsonSerializer.SerializeToElement(quantite)
                     });
+                    Console.WriteLine($"Prix stocké pour le nouveau produit: {prixDecimal}");
                 }
 
                 var panierSerialise = JsonSerializer.Serialize(items);
@@ -630,7 +656,8 @@ namespace BoutiqueEnLigne.Controllers
                     debug = new {
                         panierAvant = panier,
                         panierApres = panierSerialise,
-                        nombreArticles = totalItems
+                        nombreArticles = totalItems,
+                        prixConverti = prixDecimal
                     }
                 });
             }
@@ -813,7 +840,7 @@ namespace BoutiqueEnLigne.Controllers
                 return Json(new { 
                     success = true, 
                     message = "Redirection vers la page de paiement",
-                    redirectTo = "/Paiement/Index"
+                    redirectTo = "/Paiement/Paiement"
                 });
             }
             catch (Exception ex)

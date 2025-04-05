@@ -46,7 +46,7 @@
                                     <button class="btn btn-success ajouter-au-panier" 
                                             data-produit-id="@item["ProduitId"].GetInt32()"
                                             data-nom="@item["Nom"].GetString()"
-                                            data-prix="@item["Prix"].GetDecimal().ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                            data-prix="@item["Prix"].GetDecimal()"
                                             data-image="@item["Image"].GetString()">
                                         <i class="bi bi-cart-plus me-2"></i>Panier
                                     </button>
@@ -237,7 +237,7 @@
                 var prix = button.data('prix');
                 var card = button.closest('.col');
 
-                // Convertir le prix en nombre
+                // Convertir le prix en nombre et s'assurer qu'il est correctement formaté
                 var prixNumerique = parseFloat(prix.toString().replace(',', '.'));
 
                 console.log('Données du produit:', {
