@@ -1,0 +1,15 @@
+[33m8e5a069[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Ajout de la fonctionnalité de filtrage par catégorie : - Nouvelle action FiltreCategories dans AccueilController - Mise à jour du modèle AccueilViewModel avec CategorieActuelle - Modification de la vue Categories pour utiliser le filtrage - Ajout de logs détaillés pour le suivi
+[33m6ad84c8[m Ajout de la fonctionnalité des favoris : - Ajout du bouton 'Ajouter aux favoris' sur les pages Index et Details - Implémentation de l'action AjouterAuxFavoris dans GestionDuCompteController - Mise à jour de l'interface utilisateur avec des toasts de confirmation
+[33m938ab47[m Correction des liens dans la navbar pour pointer vers les bons contrôleurs
+[33m2921eb1[m Ajout des champs additionnels pour l'utilisateur (Username, Genre, Telephone, DateNaissance) et correction du parsing des dates
+[33m54fea25[m Amélioration du formulaire d'informations personnelles et correction des problèmes de connexion
+[33m4f2db22[m fix: Correction des problèmes de migration et de création d'adresse - Suppression du fichier BoutiqueEnLigneContext.cs dupliqué - Rendu le champ SiteWeb nullable - Correction de la création d'adresse sans ID explicite
+[33md3e3c39[m feat: Mise à jour des modèles et ajout de la gestion des adresses - Ajout de la relation User-Address avec UserId - Suppression du ConnexionController redondant - Mise à jour des migrations
+[33mf8ade3e[m Mise à jour de l'authentification et redirection vers la page des informations personnelles
+[33mc9683fe[m Ajout de la page de détails des produits et amélioration des logs
+[33m6f1cea9[m Correction du UserApiService pour gérer les champs nulls et ajout de valeurs par défaut
+[33m93692de[m Refactorisation du modèle User et mise à jour de la base de données
+[33ma84f0f0[m Ajout des pages de paiement, validation et factures avec leurs fonctionnalités
+[33m7bc79c6[m Ajout de la page panier et redirection vers la page de paiement
+[33mf38661d[m Ajout de la navbar, footer et barre de recherche avec styles Bootstrap
+[33m0679603[m premier depot vide - Projet Boutique en Ligne
