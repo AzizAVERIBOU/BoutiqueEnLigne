@@ -64,11 +64,12 @@
                                         data-prix="@product.Prix">
                                     <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
                                 </button>
-                                <button class="btn btn-outline-primary ajouter-aux-favoris" 
+                                <button class="btn btn-outline-danger ajouter-aux-favoris" 
                                         data-produit-id="@product.ProduitId"
                                         data-nom="@product.Nom"
                                         data-prix="@product.Prix"
-                                        data-image="@product.Image">
+                                        data-image="@product.Image"
+                                        data-description="@product.Description">
                                     <i class="bi bi-heart me-2"></i>Favoris
                                 </button>
                             </div>
@@ -243,6 +244,7 @@
                 var nom = button.data('nom');
                 var prix = button.data('prix');
                 var image = button.data('image');
+                var description = button.data('description');
 
                 $.ajax({
                     url: '@Url.Action("AjouterAuxFavoris", "GestionDuCompte")',
@@ -251,11 +253,12 @@
                         produitId: produitId,
                         nom: nom,
                         prix: prix,
-                        image: image
+                        image: image,
+                        description: description
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Créer et afficher le toast
+                            // Afficher un toast de succès
                             var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
                                 '<div class="toast-header">' +
                                 '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
@@ -283,29 +286,11 @@
                             } else {
                                 badge.text(currentCount + 1);
                             }
-                        } else {
-                            // Afficher une notification d'erreur
-                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
-                                '<div class="toast-header">' +
-                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
-                                '<strong class="me-auto">Erreur</strong>' +
-                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
-                                '</div>' +
-                                '<div class="toast-body">' + response.message + '</div>' +
-                                '</div>');
-
-                            $('.toast-container').append(toast);
-                            var bsToast = new bootstrap.Toast(toast);
-                            bsToast.show();
-
-                            // Supprimer le toast après qu'il soit fermé
-                            toast.on('hidden.bs.toast', function() {
-                                toast.remove();
-                            });
                         }
                     },
-                    error: function() {
-                        // Afficher une notification d'erreur
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', error);
+                        // Afficher un toast d'erreur
                         var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
                             '<div class="toast-header">' +
                             '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
@@ -319,7 +304,6 @@
                         var bsToast = new bootstrap.Toast(toast);
                         bsToast.show();
 
-                        // Supprimer le toast après qu'il soit fermé
                         toast.on('hidden.bs.toast', function() {
                             toast.remove();
                         });

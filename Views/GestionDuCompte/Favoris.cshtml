@@ -4,29 +4,20 @@
     Layout = "_Layout";
 }
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
 <div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="display-4">Mes Favoris</h1>
-                    <p class="lead">Retrouvez ici tous vos produits favoris</p>
-                </div>
-                <a href="/" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Continuer les achats
-                </a>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mes Favoris</h2>
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à l'accueil
+        </a>
     </div>
 
-    @if (!Model.Items.Any())
+    @if (Model.Items == null || !Model.Items.Any())
     {
-        <div class="row">
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>Vous n'avez pas encore de produits favoris.
-                </div>
-            </div>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>Vous n'avez aucun produit dans vos favoris.
         </div>
     }
     else
@@ -44,9 +35,14 @@
                             </p>
                             <div class="mt-3">
                                 <div class="d-flex gap-2">
-                                    <a asp-controller="Accueil" asp-action="Details" asp-route-id="@item["ProduitId"].GetInt32()" class="btn btn-primary">
+                                    <button class="btn btn-primary voir-details" 
+                                            data-produit-id="@item["ProduitId"].GetInt32()"
+                                            data-nom="@item["Nom"].GetString()"
+                                            data-prix="@item["Prix"].GetDecimal()"
+                                            data-image="@item["Image"].GetString()"
+                                            data-description="@item["Description"].GetString()">
                                         <i class="bi bi-info-circle me-2"></i>Détails
-                                    </a>
+                                    </button>
                                     <button class="btn btn-success ajouter-au-panier" 
                                             data-produit-id="@item["ProduitId"].GetInt32()"
                                             data-nom="@item["Nom"].GetString()"
@@ -67,32 +63,99 @@
     }
 </div>
 
+<!-- Modal pour les détails du produit -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Détails du produit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalImage" src="" class="img-fluid rounded" alt="Image du produit">
+                    </div>
+                    <div class="col-md-6">
+                        <h3 id="modalNom"></h3>
+                        <p class="h4 text-primary" id="modalPrix"></p>
+                        <div class="mt-3">
+                            <h5>Description</h5>
+                            <p id="modalDescription" class="text-muted"></p>
+                        </div>
+                        <div class="mt-4">
+                            <button class="btn btn-success ajouter-au-panier-modal">
+                                <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('.retirer-favoris').click(function() {
-                var produitId = $(this).data('produit-id');
-                
-                $.ajax({
-                    url: '@Url.Action("RetirerDesFavoris", "GestionDuCompte")',
-                    type: 'POST',
-                    data: { id: produitId },
-                    success: function(response) {
-                        if (response.success) {
-                            // Recharger la page pour mettre à jour l'affichage
-                            location.reload();
-                        }
-                    }
-                });
-            });
+            console.log('Document ready - Initialisation des événements');
 
-            // Gestion de l'ajout au panier depuis la page des favoris
-            $('.ajouter-au-panier').click(function() {
+            // Gestion du modal de détails
+            $('.voir-details').click(function() {
+                console.log('Bouton Détails cliqué');
                 var button = $(this);
                 var produitId = button.data('produit-id');
                 var nom = button.data('nom');
                 var prix = button.data('prix');
                 var image = button.data('image');
+                var description = button.data('description');
+
+                console.log('Données du produit:', {
+                    id: produitId,
+                    nom: nom,
+                    prix: prix,
+                    image: image,
+                    description: description
+                });
+
+                // Convertir le prix en nombre
+                var prixNumerique = parseFloat(prix.toString().replace(',', '.'));
+
+                // Mettre à jour le contenu du modal
+                $('#modalImage').attr('src', image);
+                $('#modalNom').text(nom);
+                $('#modalPrix').text(prixNumerique.toFixed(2) + ' €');
+                $('#modalDescription').text(description || 'Aucune description disponible');
+                
+                // Stocker les données du produit pour le bouton d'ajout au panier dans le modal
+                $('.ajouter-au-panier-modal').data({
+                    'produit-id': produitId,
+                    'nom': nom,
+                    'prix': prixNumerique,
+                    'image': image
+                });
+
+                console.log('Ouverture du modal');
+                // Afficher le modal
+                var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                modal.show();
+            });
+
+            // Gestion de l'ajout au panier depuis le modal
+            $('.ajouter-au-panier-modal').click(function() {
+                console.log('Bouton Ajouter au panier (modal) cliqué');
+                var button = $(this);
+                var produitId = button.data('produit-id');
+                var nom = button.data('nom');
+                var prix = button.data('prix');
+                var image = button.data('image');
+
+                console.log('Données du produit (modal):', {
+                    id: produitId,
+                    nom: nom,
+                    prix: prix,
+                    image: image
+                });
 
                 $.ajax({
                     url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
@@ -104,8 +167,13 @@
                         image: image
                     },
                     success: function(response) {
+                        console.log('Réponse AJAX:', response);
                         if (response.success) {
-                            // Créer et afficher le toast
+                            // Fermer le modal
+                            var modal = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
+                            modal.hide();
+
+                            // Afficher le toast de succès
                             var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
                                 '<div class="toast-header">' +
                                 '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
@@ -119,34 +187,17 @@
                             var bsToast = new bootstrap.Toast(toast);
                             bsToast.show();
 
-                            // Supprimer le toast après qu'il soit fermé
-                            toast.on('hidden.bs.toast', function() {
-                                toast.remove();
-                            });
-
-                            // Mettre à jour le compteur du panier dans la navbar
-                            var badge = $('.nav-link[href*="Panier"] .badge');
-                            var currentCount = parseInt(badge.text()) || 0;
-                            if (currentCount === 0) {
-                                var newBadge = $('<span class="badge bg-danger rounded-pill">1</span>');
-                                $('.nav-link[href*="Panier"]').append(newBadge);
+                            // Mettre à jour le compteur du panier
+                            var panierCount = $('#panier-count');
+                            if (panierCount.length) {
+                                var currentCount = parseInt(panierCount.text()) || 0;
+                                panierCount.text(currentCount + 1);
                             } else {
-                                badge.text(currentCount + 1);
+                                var navLink = $('.nav-link[href*="Panier"]');
+                                if (navLink.length) {
+                                    navLink.append('<span id="panier-count" class="badge bg-danger rounded-pill">1</span>');
+                                }
                             }
-                        } else {
-                            // Afficher une notification d'erreur
-                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
-                                '<div class="toast-header">' +
-                                '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
-                                '<strong class="me-auto">Erreur</strong>' +
-                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
-                                '</div>' +
-                                '<div class="toast-body">' + response.message + '</div>' +
-                                '</div>');
-
-                            $('.toast-container').append(toast);
-                            var bsToast = new bootstrap.Toast(toast);
-                            bsToast.show();
 
                             // Supprimer le toast après qu'il soit fermé
                             toast.on('hidden.bs.toast', function() {
@@ -154,8 +205,9 @@
                             });
                         }
                     },
-                    error: function() {
-                        // Afficher une notification d'erreur
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', error);
+                        // Afficher un toast d'erreur
                         var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
                             '<div class="toast-header">' +
                             '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
@@ -169,10 +221,115 @@
                         var bsToast = new bootstrap.Toast(toast);
                         bsToast.show();
 
-                        // Supprimer le toast après qu'il soit fermé
                         toast.on('hidden.bs.toast', function() {
                             toast.remove();
                         });
+                    }
+                });
+            });
+
+            // Gestion de l'ajout au panier depuis la carte
+            $('.ajouter-au-panier').click(function() {
+                console.log('Bouton Ajouter au panier (carte) cliqué');
+                var button = $(this);
+                var produitId = button.data('produit-id');
+                var nom = button.data('nom');
+                var prix = button.data('prix');
+                var image = button.data('image');
+
+                // Convertir le prix en nombre
+                var prixNumerique = parseFloat(prix.toString().replace(',', '.'));
+
+                console.log('Données du produit (carte):', {
+                    id: produitId,
+                    nom: nom,
+                    prix: prixNumerique,
+                    image: image
+                });
+
+                $.ajax({
+                    url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
+                    type: 'POST',
+                    data: {
+                        produitId: produitId,
+                        nom: nom,
+                        prix: prixNumerique,
+                        image: image
+                    },
+                    success: function(response) {
+                        console.log('Réponse AJAX:', response);
+                        if (response.success) {
+                            var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                                '<div class="toast-header">' +
+                                '<i class="bi bi-check-circle-fill text-success me-2"></i>' +
+                                '<strong class="me-auto">Succès</strong>' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                                '</div>' +
+                                '<div class="toast-body">' + response.message + '</div>' +
+                                '</div>');
+
+                            $('.toast-container').append(toast);
+                            var bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+
+                            // Mettre à jour le compteur du panier
+                            var panierCount = $('#panier-count');
+                            if (panierCount.length) {
+                                var currentCount = parseInt(panierCount.text()) || 0;
+                                panierCount.text(currentCount + 1);
+                            } else {
+                                var navLink = $('.nav-link[href*="Panier"]');
+                                if (navLink.length) {
+                                    navLink.append('<span id="panier-count" class="badge bg-danger rounded-pill">1</span>');
+                                }
+                            }
+
+                            toast.on('hidden.bs.toast', function() {
+                                toast.remove();
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', error);
+                        // Afficher un toast d'erreur
+                        var toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="toast-header">' +
+                            '<i class="bi bi-exclamation-circle-fill text-danger me-2"></i>' +
+                            '<strong class="me-auto">Erreur</strong>' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="toast"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">Une erreur est survenue lors de l\'ajout au panier</div>' +
+                            '</div>');
+
+                        $('.toast-container').append(toast);
+                        var bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+
+                        toast.on('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    }
+                });
+            });
+
+            // Gestion du retrait des favoris
+            $('.retirer-favoris').click(function() {
+                console.log('Bouton Retirer des favoris cliqué');
+                var produitId = $(this).data('produit-id');
+                console.log('ID du produit à retirer:', produitId);
+                
+                $.ajax({
+                    url: '@Url.Action("RetirerDesFavoris", "GestionDuCompte")',
+                    type: 'POST',
+                    data: { id: produitId },
+                    success: function(response) {
+                        console.log('Réponse AJAX (retrait):', response);
+                        if (response.success) {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX (retrait):', error);
                     }
                 });
             });

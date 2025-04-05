@@ -856,67 +856,63 @@ namespace BoutiqueEnLigne.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult AjouterAuxFavoris(int produitId, string nom, decimal prix, string image)
+        public IActionResult AjouterAuxFavoris(int produitId, string nom, decimal prix, string image, string description)
         {
             try
             {
-                Console.WriteLine("=== Début de la méthode AjouterAuxFavoris ===");
-                Console.WriteLine($"Paramètres: produitId={produitId}, nom={nom}, prix={prix}, image={image}");
+                _logger.LogInformation("=== Début de la méthode AjouterAuxFavoris ===");
+                _logger.LogInformation($"Paramètres: produitId={produitId}, nom={nom}, prix={prix}, image={image}, description={description}");
 
                 var favoris = HttpContext.Session.GetString("Favoris");
-                Console.WriteLine($"Contenu brut des favoris avant ajout: {favoris}");
+                _logger.LogInformation($"Contenu brut des favoris avant ajout:\n{favoris}");
 
-                List<Dictionary<string, JsonElement>> items;
+                List<dynamic> favorisList;
                 if (string.IsNullOrEmpty(favoris))
                 {
-                    items = new List<Dictionary<string, JsonElement>>();
+                    favorisList = new List<dynamic>();
                 }
                 else
                 {
-                    items = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(favoris);
+                    var jsonElements = JsonSerializer.Deserialize<List<JsonElement>>(favoris);
+                    favorisList = jsonElements.Select(element => new
+                    {
+                        ProduitId = element.GetProperty("ProduitId").GetInt32(),
+                        Nom = element.GetProperty("Nom").GetString(),
+                        Prix = element.GetProperty("Prix").GetDecimal(),
+                        Image = element.GetProperty("Image").GetString(),
+                        Description = element.GetProperty("Description").GetString()
+                    }).ToList<dynamic>();
                 }
 
                 // Vérifier si le produit est déjà dans les favoris
-                var existingItem = items.FirstOrDefault(i => i["ProduitId"].GetInt32() == produitId);
-                if (existingItem != null)
+                if (!favorisList.Any(p => ((dynamic)p).ProduitId == produitId))
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = "Ce produit est déjà dans vos favoris" 
+                    favorisList.Add(new
+                    {
+                        ProduitId = produitId,
+                        Nom = nom,
+                        Prix = prix,
+                        Image = image,
+                        Description = description
                     });
+
+                    var updatedFavoris = JsonSerializer.Serialize(favorisList);
+                    HttpContext.Session.SetString("Favoris", updatedFavoris);
+                    _logger.LogInformation($"Contenu des favoris après ajout:\n{updatedFavoris}");
+                    _logger.LogInformation($"Nombre total d'articles dans les favoris: {favorisList.Count}");
+                }
+                else
+                {
+                    _logger.LogInformation("Le produit est déjà dans les favoris");
                 }
 
-                // Ajouter le nouveau produit aux favoris
-                items.Add(new Dictionary<string, JsonElement>
-                {
-                    ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
-                    ["Nom"] = JsonSerializer.SerializeToElement(nom),
-                    ["Prix"] = JsonSerializer.SerializeToElement(prix),
-                    ["Image"] = JsonSerializer.SerializeToElement(image)
-                });
-
-                var favorisSerialise = JsonSerializer.Serialize(items);
-                Console.WriteLine($"Contenu des favoris après ajout: {favorisSerialise}");
-                HttpContext.Session.SetString("Favoris", favorisSerialise);
-
-                var totalItems = items.Count;
-                Console.WriteLine($"Nombre total d'articles dans les favoris: {totalItems}");
-                Console.WriteLine("=== Fin de la méthode AjouterAuxFavoris ===");
-
-                return Json(new { 
-                    success = true, 
-                    message = "Produit ajouté aux favoris avec succès", 
-                    count = totalItems
-                });
+                _logger.LogInformation("=== Fin de la méthode AjouterAuxFavoris ===");
+                return Json(new { success = true, message = "Produit ajouté aux favoris avec succès" });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur dans la méthode AjouterAuxFavoris: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                return Json(new { 
-                    success = false, 
-                    message = "Une erreur est survenue lors de l'ajout aux favoris"
-                });
+                _logger.LogError($"Erreur lors de l'ajout aux favoris: {ex.Message}");
+                return Json(new { success = false, message = "Erreur lors de l'ajout aux favoris" });
             }
         }
     }
