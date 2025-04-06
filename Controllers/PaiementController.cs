@@ -165,75 +165,91 @@ namespace BoutiqueEnLigne.Controllers
         }
 
         [HttpPost]
-        [Authorize]
-        public IActionResult CreateCheckoutSession()
+        public async Task<IActionResult> CreateCheckoutSession()
         {
             try
             {
                 _logger.LogInformation("=== Début de la création de la session Stripe ===");
                 
+                // Récupérer le panier
                 var panier = HttpContext.Session.GetString("Panier");
                 if (string.IsNullOrEmpty(panier))
                 {
                     _logger.LogWarning("Le panier est vide");
-                    return Json(new { error = "Le panier est vide" });
+                    return BadRequest("Le panier est vide");
                 }
 
                 var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panier);
                 _logger.LogInformation($"Nombre d'articles dans le panier: {items.Count}");
 
-                var lineItems = new List<SessionLineItemOptions>();
-                foreach (var item in items)
-                {
-                    var prix = item["Prix"].GetDecimal();
-                    var quantite = item["Quantite"].GetInt32();
-                    var nom = item["Nom"].GetString();
-                    
-                    _logger.LogInformation($"Article: {nom}, Prix: {prix}, Quantité: {quantite}");
-
-                    lineItems.Add(new SessionLineItemOptions
-                    {
-                        PriceData = new SessionLineItemPriceDataOptions
-                        {
-                            UnitAmount = (long)(prix * 100), // Convertir en centimes
-                            Currency = "eur",
-                            ProductData = new SessionLineItemPriceDataProductDataOptions
-                            {
-                                Name = nom,
-                            },
-                        },
-                        Quantity = quantite,
-                    });
-                }
-
+                // Créer les options de la session Stripe
                 var options = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string> { "card" },
-                    LineItems = lineItems,
+                    LineItems = items.Select(item => new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(item["Prix"].GetDecimal() * 100), // Convertir en centimes
+                            Currency = "eur",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = item["Nom"].GetString(),
+                                Images = new List<string> { item["Image"].GetString() }
+                            }
+                        },
+                        Quantity = item["Quantite"].GetInt32()
+                    }).ToList(),
                     Mode = "payment",
-                    SuccessUrl = Url.Action("Success", "Paiement", null, Request.Scheme),
-                    CancelUrl = Url.Action("Cancel", "Paiement", null, Request.Scheme),
+                    SuccessUrl = $"{Request.Scheme}://{Request.Host}/Paiement/Success",
+                    CancelUrl = $"{Request.Scheme}://{Request.Host}/Paiement/Cancel"
                 };
 
                 _logger.LogInformation("Création de la session Stripe...");
                 var service = new SessionService();
-                var session = service.Create(options);
+                var session = await service.CreateAsync(options);
                 _logger.LogInformation($"Session créée avec succès. ID: {session.Id}");
 
-                return Json(new { sessionId = session.Id });
+                // Retourner l'URL de la session
+                return Json(new { url = session.Url });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la création de la session Stripe");
-                return Json(new { error = "Une erreur est survenue lors de la création de la session de paiement" });
+                return StatusCode(500, "Une erreur est survenue lors de la création de la session de paiement");
             }
         }
 
         public IActionResult Success()
         {
-            // Vider le panier après un paiement réussi
-            HttpContext.Session.Remove("Panier");
-            return View();
+            try
+            {
+                _logger.LogInformation("=== Début de la méthode Success ===");
+                
+                // Récupérer le panier pour calculer le total
+                var panier = HttpContext.Session.GetString("Panier");
+                if (!string.IsNullOrEmpty(panier))
+                {
+                    var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panier);
+                    var total = items.Sum(i => i["Prix"].GetDecimal() * i["Quantite"].GetInt32());
+                    
+                    // Passer les données à la vue
+                    ViewBag.Items = items;
+                    ViewBag.Total = total;
+                    
+                    // Vider le panier après un paiement réussi
+                    HttpContext.Session.Remove("Panier");
+                    
+                    _logger.LogInformation($"Paiement réussi - Total: {total}€");
+                }
+                
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur dans la méthode Success");
+                return View();
+            }
         }
 
         public IActionResult Cancel()
