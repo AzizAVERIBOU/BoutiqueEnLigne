@@ -756,25 +756,36 @@ namespace BoutiqueEnLigne.Controllers
         {
             try
             {
+                Console.WriteLine("=== Début de la méthode ModifierQuantite ===");
+                Console.WriteLine($"Paramètres reçus: produitId={produitId}, delta={delta}");
+
                 var panier = HttpContext.Session.GetString("Panier");
+                Console.WriteLine($"Contenu brut du panier: {panier}");
+
                 if (string.IsNullOrEmpty(panier))
                 {
+                    Console.WriteLine("Le panier est vide");
                     return Json(new { success = false, message = "Le panier est vide" });
                 }
 
                 var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panier);
-                var itemToUpdate = items.FirstOrDefault(i => i["ProduitId"].GetInt32() == produitId);
+                Console.WriteLine($"Nombre d'articles dans le panier: {items.Count}");
 
+                var itemToUpdate = items.FirstOrDefault(i => i["ProduitId"].GetInt32() == produitId);
                 if (itemToUpdate == null)
                 {
+                    Console.WriteLine($"Produit {produitId} non trouvé dans le panier");
                     return Json(new { success = false, message = "Le produit n'existe pas dans le panier" });
                 }
 
+                Console.WriteLine($"Produit trouvé: ID={itemToUpdate["ProduitId"].GetInt32()}, Nom={itemToUpdate["Nom"].GetString()}");
                 var currentQuantite = itemToUpdate["Quantite"].GetInt32();
                 var newQuantite = currentQuantite + delta;
+                Console.WriteLine($"Quantité actuelle: {currentQuantite}, Nouvelle quantité: {newQuantite}");
 
                 if (newQuantite < 1)
                 {
+                    Console.WriteLine("La nouvelle quantité est inférieure à 1");
                     return Json(new { success = false, message = "La quantité ne peut pas être inférieure à 1" });
                 }
 
@@ -788,12 +799,17 @@ namespace BoutiqueEnLigne.Controllers
                     ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite)
                 });
 
-                HttpContext.Session.SetString("Panier", JsonSerializer.Serialize(items));
+                var panierSerialise = JsonSerializer.Serialize(items);
+                Console.WriteLine($"Nouveau contenu du panier: {panierSerialise}");
+                HttpContext.Session.SetString("Panier", panierSerialise);
 
+                Console.WriteLine("=== Fin de la méthode ModifierQuantite ===");
                 return Json(new { success = true, message = "Quantité mise à jour avec succès" });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Erreur dans la méthode ModifierQuantite: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return Json(new { success = false, message = "Une erreur est survenue lors de la modification de la quantité" });
             }
         }

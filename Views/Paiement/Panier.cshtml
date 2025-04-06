@@ -79,15 +79,20 @@
 @section Scripts {
     <script>
         function modifierQuantite(produitId, delta) {
-            fetch('/GestionDuCompte/ModifierQuantite', {
+            console.log(`Modification de la quantité: produitId=${produitId}, delta=${delta}`);
+            
+            fetch(`/GestionDuCompte/ModifierQuantite?produitId=${produitId}&delta=${delta}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ produitId: produitId, delta: delta })
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Réponse reçue:', response);
+                return response.json();
+            })
             .then(data => {
+                console.log('Données reçues:', data);
                 if (data.success) {
                     location.reload();
                 } else {
