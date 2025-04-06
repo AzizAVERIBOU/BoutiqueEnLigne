@@ -63,7 +63,7 @@
         <div class="d-flex justify-content-end mt-4">
             <form id="passerCommandeForm" method="post">
                 <button type="submit" class="btn btn-success">
-                    <i class="bi bi-credit-card"></i> Procéder au paiement
+                    <i class="bi bi-credit-card"></i> Procéder au paiement 
                 </button>
             </form>
         </div>
@@ -130,33 +130,42 @@
         }
 
         // Gérer la soumission du formulaire de commande
-        document.getElementById('passerCommandeForm').addEventListener('submit', function(e) {
+        document.getElementById('passerCommandeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            fetch('/GestionDuCompte/PasserCommande', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Redirection vers la page de paiement
-                    window.location.href = data.redirectTo;
-                } else {
-                    // Afficher le message d'erreur
-                    alert(data.message);
-                    // Si une redirection est spécifiée, rediriger
-                    if (data.redirectTo) {
-                        window.location.href = data.redirectTo;
+            try {
+                // Désactiver le bouton pendant le traitement
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-arrow-repeat bi-spin me-2"></i>Création de la session...';
+
+                const response = await fetch('/Paiement/CreateCheckoutSession', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la création de la session');
                 }
-            })
-            .catch(error => {
+
+                const data = await response.json();
+                
+                if (data.url) {
+                    // Rediriger vers la page de paiement Stripe
+                    window.location.href = data.url;
+                } else {
+                    throw new Error('URL de redirection non trouvée');
+                }
+            } catch (error) {
                 console.error('Erreur:', error);
                 alert('Une erreur est survenue lors du traitement de votre commande');
-            });
+                // Réactiver le bouton en cas d'erreur
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="bi bi-credit-card"></i> Procéder au paiement';
+            }
         });
     </script>
 } 

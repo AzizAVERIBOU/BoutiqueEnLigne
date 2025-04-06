@@ -27,11 +27,6 @@ namespace BoutiqueEnLigne.Controllers
             _stripeSettings = stripeSettings.Value;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         public IActionResult Panier()
         {
             var panier = HttpContext.Session.GetString("Panier");
@@ -111,56 +106,6 @@ namespace BoutiqueEnLigne.Controllers
             {
                 _logger.LogError(ex, "Erreur lors de la suppression du panier");
                 return Json(new { success = false, message = "Une erreur est survenue lors de la suppression du produit" });
-            }
-        }
-
-        public IActionResult PasserCommande()
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                TempData["ReturnUrl"] = Url.Action("Paiement", "Paiement");
-                return RedirectToAction("Login", "Account");
-            }
-
-            var panier = HttpContext.Session.GetString("Panier");
-            var items = string.IsNullOrEmpty(panier) ? new List<object>() : JsonSerializer.Deserialize<List<object>>(panier);
-
-            if (items.Count == 0)
-            {
-                TempData["Message"] = "Votre panier est vide.";
-                return RedirectToAction("Panier");
-            }
-
-            ViewBag.Items = items;
-            ViewBag.Total = items.Sum(i => {
-                var item = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(i.ToString());
-                return item["Prix"].GetDecimal() * item["Quantite"].GetInt32();
-            });
-            
-            return View("Paiement");
-        }
-
-        public IActionResult Paiement()
-        {
-            try
-            {
-                var panier = HttpContext.Session.GetString("Panier");
-                if (string.IsNullOrEmpty(panier))
-                {
-                    return RedirectToAction("Panier", "GestionDuCompte");
-                }
-
-                var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(panier);
-                ViewBag.Items = items;
-                ViewBag.Total = items.Sum(i => i["Prix"].GetDecimal() * i["Quantite"].GetInt32());
-                ViewBag.StripePublishableKey = _stripeSettings.PublishableKey;
-
-                return View();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erreur lors de l'accès à la page de paiement");
-                return RedirectToAction("Panier", "GestionDuCompte");
             }
         }
 
@@ -253,16 +198,6 @@ namespace BoutiqueEnLigne.Controllers
         }
 
         public IActionResult Cancel()
-        {
-            return View();
-        }
-
-        public IActionResult Validation()
-        {
-            return View();
-        }
-
-        public IActionResult Factures()
         {
             return View();
         }
