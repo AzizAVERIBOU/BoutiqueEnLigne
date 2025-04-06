@@ -1,6 +1,7 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@using BoutiqueEnLigne.Models.User
 @model BoutiqueEnLigne.Models.User.User
 @{
     Layout = "_Layout";
@@ -14,14 +15,17 @@
                 <div class="card-body p-4">
                     <h2 class="h4 mb-4 text-center">Créer un compte</h2>
 
-                    <form asp-action="Inscription" method="post">
+                    <form asp-action="Inscription" method="post" class="needs-validation" novalidate id="inscriptionForm">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
                         <div class="mb-3">
                             <label asp-for="Prenom" class="form-label">Prénom</label>
                             <div class="input-group">
                                 <span class="input-group-text">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                <input asp-for="Prenom" class="form-control" required>
+                                <input asp-for="Prenom" name="Prenom" class="form-control" required 
+                                       onchange="logFieldChange('Prenom', this.value)">
                             </div>
                             <span asp-validation-for="Prenom" class="text-danger"></span>
                         </div>
@@ -32,7 +36,8 @@
                                 <span class="input-group-text">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                <input asp-for="Nom" class="form-control" required>
+                                <input asp-for="Nom" name="Nom" class="form-control" required 
+                                       onchange="logFieldChange('Nom', this.value)">
                             </div>
                             <span asp-validation-for="Nom" class="text-danger"></span>
                         </div>
@@ -43,7 +48,8 @@
                                 <span class="input-group-text">
                                     <i class="bi bi-envelope"></i>
                                 </span>
-                                <input asp-for="Email" class="form-control" required>
+                                <input asp-for="Email" name="Email" type="email" class="form-control" required 
+                                       onchange="logFieldChange('Email', this.value)">
                             </div>
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
@@ -54,13 +60,30 @@
                                 <span class="input-group-text">
                                     <i class="bi bi-lock"></i>
                                 </span>
-                                <input asp-for="MotDePasse" type="password" class="form-control" required>
+                                <input asp-for="MotDePasse" name="MotDePasse" type="password" class="form-control" required 
+                                       onchange="logFieldChange('MotDePasse', '********')">
                             </div>
                             <span asp-validation-for="MotDePasse" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="Role" class="form-label">Rôle</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-badge"></i>
+                                </span>
+                                <select asp-for="Role" name="Role" asp-items="Html.GetEnumSelectList<RoleUtilisateur>()" 
+                                        class="form-select" required onchange="logFieldChange('Role', this.value)">
+                                    <option value="">Sélectionnez un rôle</option>
+                                    <option value="Client">Client</option>
+                                    <option value="Vendeur">Vendeur</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" onclick="logFormSubmit()">
                                 <i class="bi bi-person-plus me-2"></i>S'inscrire
                             </button>
                         </div>
@@ -74,3 +97,37 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function logFieldChange(fieldName, value) {
+            console.log(`Champ ${fieldName} modifié :`, value);
+        }
+
+        function logFormSubmit() {
+            const form = document.getElementById('inscriptionForm');
+            const formData = new FormData(form);
+            console.log('=== Tentative de soumission du formulaire ===');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+        }
+
+        // Validation côté client
+        (function () {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        console.log('Formulaire invalide');
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+}

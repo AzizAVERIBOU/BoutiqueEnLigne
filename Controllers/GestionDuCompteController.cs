@@ -10,6 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using BCrypt.Net;
 
 namespace BoutiqueEnLigne.Controllers
 {
@@ -59,8 +60,26 @@ namespace BoutiqueEnLigne.Controllers
                     Console.WriteLine($"Mot de passe stocké: {localUser.MotDePasse}");
                     Console.WriteLine($"Mot de passe fourni: {motDePasse}");
                     
-                    // Vérifier le mot de passe
-                    if (localUser.MotDePasse == motDePasse) // Note: En production, utiliser un hash
+                    bool passwordValid = false;
+                    try
+                    {
+                        // Essayer de vérifier avec BCrypt
+                        passwordValid = BCrypt.Net.BCrypt.Verify(motDePasse, localUser.MotDePasse);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erreur BCrypt: {ex.Message}");
+                        // Si BCrypt échoue, vérifier le mot de passe en clair
+                        passwordValid = localUser.MotDePasse == motDePasse;
+                        if (passwordValid)
+                        {
+                            // Si le mot de passe est correct mais non haché, le hacher et mettre à jour la base
+                            localUser.MotDePasse = BCrypt.Net.BCrypt.HashPassword(motDePasse);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                    
+                    if (passwordValid)
                     {
                         Console.WriteLine("Mot de passe correct pour l'utilisateur local");
                         var claims = new List<Claim>
@@ -135,7 +154,7 @@ namespace BoutiqueEnLigne.Controllers
                     var newUser = new User
                     {
                         Email = apiUser.Email,
-                        MotDePasse = motDePasse,
+                        MotDePasse = BCrypt.Net.BCrypt.HashPassword(motDePasse),
                         Nom = apiUser.Nom,
                         Prenom = apiUser.Prenom,
                         DateInscription = DateTime.Now,
@@ -147,7 +166,7 @@ namespace BoutiqueEnLigne.Controllers
                         Role = RoleUtilisateur.Client,
                         Username = apiUser.Username ?? apiUser.Email.Split('@')[0],
                         Genre = "other",
-                        Telephone = "",
+                        Telephone = "+33600000000",
                         DateNaissance = null
                     };
 
@@ -217,64 +236,78 @@ namespace BoutiqueEnLigne.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Inscription(User user)
+        public async Task<IActionResult> Inscription(
+            [FromForm(Name = "Email")] string email,
+            [FromForm(Name = "Nom")] string nom,
+            [FromForm(Name = "Prenom")] string prenom,
+            [FromForm(Name = "MotDePasse")] string motDePasse,
+            [FromForm(Name = "Role")] RoleUtilisateur role)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                _logger.LogInformation("=== Début du processus d'inscription ===");
+                _logger.LogInformation("Données reçues - Email: {Email}, Nom: {Nom}, Prénom: {Prenom}, Role: {Role}", 
+                    email, nom, prenom, role);
+
+                // Créer un nouvel utilisateur avec les données reçues
+                var user = new User
                 {
-                    // Vérifier si l'email existe déjà
-                    if (_context.Users.Any(u => u.Email == user.Email))
+                    Email = email,
+                    Nom = nom,
+                    Prenom = prenom,
+                    MotDePasse = motDePasse,
+                    Role = role,
+                    DateInscription = DateTime.Now,
+                    DerniereConnexion = DateTime.Now,
+                    EstActif = true,
+                    InscritNewsletter = false,
+                    NotificationsEmail = false,
+                    Image = "default-avatar.png",
+                    Genre = "other", // Valeur par défaut pour le genre
+                    Username = email.Split('@')[0], // Créer un nom d'utilisateur à partir de l'email
+                    Telephone = "+33600000000", // Format de téléphone valide par défaut
+                    SiteWeb = "" // Valeur par défaut pour le site web
+                };
+
+                // Valider le modèle
+                if (!TryValidateModel(user))
+                {
+                    _logger.LogWarning("=== État du modèle invalide ===");
+                    foreach (var modelState in ModelState)
                     {
-                        ModelState.AddModelError("Email", "Cet email est déjà utilisé");
-                        return View(user);
+                        _logger.LogWarning("Champ: {Key}, Erreurs: {@Errors}", 
+                            modelState.Key, 
+                            modelState.Value.Errors.Select(e => e.ErrorMessage));
                     }
-
-                    // Initialiser les nouveaux champs
-                    user.Username = user.Username ?? user.Email.Split('@')[0];
-                    user.Genre = user.Genre ?? "other";
-                    user.Telephone = user.Telephone ?? "";
-                    user.DateInscription = DateTime.Now;
-                    user.DerniereConnexion = DateTime.Now;
-                    user.EstActif = true;
-                    user.InscritNewsletter = false;
-                    user.NotificationsEmail = false;
-                    user.Role = RoleUtilisateur.Client;
-
-                    // Ajouter l'utilisateur à la base de données
-                    _context.Users.Add(user);
-                    _context.SaveChanges();
-
-                    // Connecter l'utilisateur
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.Email),
-                        new Claim(ClaimTypes.Role, user.Role.ToString()),
-                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-                    };
-
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-                    };
-
-                    HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(claimsIdentity),
-                        authProperties).Wait();
-
-                    return RedirectToAction("Infospersonnelles");
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Une erreur est survenue lors de l'inscription. Veuillez réessayer.");
                     return View(user);
                 }
-            }
 
-            return View(user);
+                _logger.LogInformation("Vérification de l'existence de l'utilisateur avec l'email: {Email}", email);
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (existingUser != null)
+                {
+                    _logger.LogWarning("Un utilisateur avec l'email {Email} existe déjà", email);
+                    ModelState.AddModelError("Email", "Un compte avec cet email existe déjà.");
+                    return View(user);
+                }
+
+                _logger.LogInformation("Hachage du mot de passe pour l'utilisateur: {Email}", email);
+                user.MotDePasse = BCrypt.Net.BCrypt.HashPassword(motDePasse);
+
+                _logger.LogInformation("Ajout de l'utilisateur à la base de données: {@User}", new { email, role });
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Utilisateur ajouté avec succès, ID: {Id}", user.Id);
+
+                _logger.LogInformation("=== Fin du processus d'inscription ===");
+                return RedirectToAction("Connexion", new { message = "Inscription réussie ! Vous pouvez maintenant vous connecter." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'inscription de l'utilisateur: {Email}", email);
+                ModelState.AddModelError("", "Une erreur est survenue lors de l'inscription. Veuillez réessayer.");
+                return View(new User { Email = email, Nom = nom, Prenom = prenom, Role = role });
+            }
         }
 
         [Authorize]
@@ -792,15 +825,17 @@ namespace BoutiqueEnLigne.Controllers
                     return Json(new { success = false, message = "La quantité ne peut pas être inférieure à 1" });
                 }
 
-                // Mettre à jour la quantité
+                // Mettre à jour la quantité en conservant toutes les propriétés
                 items.Remove(itemToUpdate);
-                items.Add(new Dictionary<string, JsonElement>
+                var updatedItem = new Dictionary<string, JsonElement>
                 {
-                    ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
+                    ["ProduitId"] = itemToUpdate["ProduitId"],
                     ["Nom"] = itemToUpdate["Nom"],
                     ["Prix"] = itemToUpdate["Prix"],
-                    ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite)
-                });
+                    ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite),
+                    ["Image"] = itemToUpdate["Image"]
+                };
+                items.Add(updatedItem);
 
                 var panierSerialise = JsonSerializer.Serialize(items);
                 Console.WriteLine($"Nouveau contenu du panier: {panierSerialise}");

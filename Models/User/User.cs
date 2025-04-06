@@ -25,14 +25,14 @@ namespace BoutiqueEnLigne.Models.User
 
         [Display(Name = "Nom d'utilisateur")]
         [StringLength(50, ErrorMessage = "Le nom d'utilisateur ne peut pas dépasser 50 caractères")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         [Display(Name = "Genre")]
-        public string Genre { get; set; }
+        public string? Genre { get; set; }
 
         [Display(Name = "Téléphone")]
         [Phone(ErrorMessage = "Format de téléphone invalide")]
-        public string Telephone { get; set; }
+        public string? Telephone { get; set; }
 
         [Display(Name = "Date de naissance")]
         [DataType(DataType.Date)]
@@ -45,34 +45,34 @@ namespace BoutiqueEnLigne.Models.User
         public string MotDePasse { get; set; }
 
         [Display(Name = "Date d'inscription")]
-        public DateTime DateInscription { get; set; }
+        public DateTime DateInscription { get; set; } = DateTime.Now;
 
         [Display(Name = "Dernière connexion")]
-        public DateTime DerniereConnexion { get; set; }
+        public DateTime DerniereConnexion { get; set; } = DateTime.Now;
 
         [Display(Name = "Rôle")]
-        public RoleUtilisateur Role { get; set; }
+        public RoleUtilisateur Role { get; set; } = RoleUtilisateur.Client;
 
         [Display(Name = "Est actif")]
-        public bool EstActif { get; set; }
+        public bool EstActif { get; set; } = true;
 
         [Display(Name = "Notifications par email")]
-        public bool NotificationsEmail { get; set; }
+        public bool NotificationsEmail { get; set; } = false;
 
         [Display(Name = "Inscrit à la newsletter")]
-        public bool InscritNewsletter { get; set; }
+        public bool InscritNewsletter { get; set; } = false;
 
         [Display(Name = "Image de profil")]
-        public string Image { get; set; }
+        public string? Image { get; set; } = "default-avatar.png";
 
         [Display(Name = "Site web")]
         public string? SiteWeb { get; set; }
 
         // Propriétés de navigation
-        public virtual Address Address { get; set; }
-        public virtual Bank Bank { get; set; }
-        public virtual Company Company { get; set; }
-        public virtual ICollection<Commande> Commandes { get; set; }
+        public virtual Address? Address { get; set; }
+        public virtual Bank? Bank { get; set; }
+        public virtual Company? Company { get; set; }
+        public virtual ICollection<Commande>? Commandes { get; set; }
     }
 
     public enum RoleUtilisateur
