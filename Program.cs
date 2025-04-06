@@ -4,6 +4,7 @@ using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
 using BoutiqueEnLigne.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Stripe;           
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/GestionDuCompte/Connexion";
         options.LogoutPath = "/GestionDuCompte/Deconnexion";
     });
+
+// Configuration de Stripe
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe")); 
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // Configuration des services HTTP
 builder.Services.AddHttpClient();

@@ -61,7 +61,8 @@
                                 <button class="btn btn-success ajouter-au-panier" 
                                         data-produit-id="@product.ProduitId"
                                         data-nom="@product.Nom"
-                                        data-prix="@product.Prix">
+                                        data-prix="@product.Prix"
+                                        data-image="@product.Image">
                                     <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
                                 </button>
                                 <button class="btn btn-outline-danger ajouter-aux-favoris" 
@@ -170,6 +171,7 @@
                 var produitId = button.data('produit-id');
                 var nom = button.data('nom');
                 var prix = button.data('prix');
+                var image = button.data('image');
 
                 $.ajax({
                     url: '@Url.Action("AjouterAuPanier", "GestionDuCompte")',
@@ -177,7 +179,9 @@
                     data: {
                         produitId: produitId,
                         nom: nom,
-                        prix: prix
+                        prix: prix,
+                        image: image,
+                        quantite: 1
                     },
                     success: function(response) {
                         if (response.success) {

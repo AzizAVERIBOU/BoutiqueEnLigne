@@ -558,7 +558,7 @@ namespace BoutiqueEnLigne.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult AjouterAuPanier(int produitId, string nom, string prix, int quantite = 1)
+        public IActionResult AjouterAuPanier(int produitId, string nom, string prix, string image, int quantite = 1)
         {
             try
             {
@@ -567,6 +567,7 @@ namespace BoutiqueEnLigne.Controllers
                 Console.WriteLine($"- produitId: {produitId}");
                 Console.WriteLine($"- nom: {nom}");
                 Console.WriteLine($"- prix (brut): {prix}");
+                Console.WriteLine($"- image: {image}");
                 Console.WriteLine($"- quantite: {quantite}");
 
                 // Convertir le prix en décimal
@@ -624,7 +625,8 @@ namespace BoutiqueEnLigne.Controllers
                         ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
                         ["Nom"] = JsonSerializer.SerializeToElement(nom),
                         ["Prix"] = JsonSerializer.SerializeToElement(prixDecimal),
-                        ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite)
+                        ["Quantite"] = JsonSerializer.SerializeToElement(newQuantite),
+                        ["Image"] = JsonSerializer.SerializeToElement(image)
                     });
                     Console.WriteLine($"Prix stocké pour le produit existant: {prixDecimal}");
                 }
@@ -636,7 +638,8 @@ namespace BoutiqueEnLigne.Controllers
                         ["ProduitId"] = JsonSerializer.SerializeToElement(produitId),
                         ["Nom"] = JsonSerializer.SerializeToElement(nom),
                         ["Prix"] = JsonSerializer.SerializeToElement(prixDecimal),
-                        ["Quantite"] = JsonSerializer.SerializeToElement(quantite)
+                        ["Quantite"] = JsonSerializer.SerializeToElement(quantite),
+                        ["Image"] = JsonSerializer.SerializeToElement(image)
                     });
                     Console.WriteLine($"Prix stocké pour le nouveau produit: {prixDecimal}");
                 }
