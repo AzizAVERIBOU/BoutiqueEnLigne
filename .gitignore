@@ -1,8 +1,40 @@
-# Visual Studio files
+# Fichiers de configuration sensibles
+appsettings.*.json
+!appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+# Fichiers de secrets
+secrets.json
+
+# Fichiers de l'IDE
 .vs/
+.vscode/
 *.user
+*.suo
 *.userosscache
 *.sln.docstates
+
+# Fichiers de compilation
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+
+# Fichiers de logs
+*.log
+logs/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*~
+
+# Fichiers de dépendances
+node_modules/
+packages/
 
 # Build results
 [Dd]ebug/
@@ -36,7 +68,6 @@ _ReSharper*/
 
 # User-specific files
 *.rsuser
-*.suo
 *.user
 *.userosscache
 *.sln.docstates
