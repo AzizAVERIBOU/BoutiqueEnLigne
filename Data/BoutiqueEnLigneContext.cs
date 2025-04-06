@@ -21,6 +21,7 @@ namespace BoutiqueEnLigne.Data
         public DbSet<Facture> Factures { get; set; }
         public DbSet<Panier> Paniers { get; set; }
         public DbSet<CarteDeCredit> CartesDeCredit { get; set; }
+        public DbSet<ProduitVendeur> ProduitsVendeurs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -161,6 +162,17 @@ namespace BoutiqueEnLigne.Data
                 .WithMany(c => c.ProduitsAchat)
                 .HasForeignKey(p => p.ClientAchatId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuration de la relation ProduitVendeur-Vendeur
+            modelBuilder.Entity<ProduitVendeur>()
+                .HasOne(pv => pv.Vendeur)
+                .WithMany()
+                .HasForeignKey(pv => pv.VendeurId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProduitVendeur>()
+                .Property(pv => pv.Prix)
+                .HasPrecision(18, 2);
         }
     }
 } 

@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="~/css/style.css">
     <link rel="stylesheet" href="~/css/navbar.css">
     <link rel="stylesheet" href="~/css/footer.css">
+    
+    @await RenderSectionAsync("Styles", required: false)
 </head>    
 <body class="d-flex flex-column min-vh-100">
     <partial name="_NavBar" />

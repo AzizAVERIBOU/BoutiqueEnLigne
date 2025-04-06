@@ -28,6 +28,14 @@
                         <i class="bi bi-grid"></i> Catégories
                     </a>
                 </li>
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                            <i class="bi bi-gear"></i> Administration
+                        </a>
+                    </li>
+                }
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Autres" asp-action="APropos">
                         <i class="bi bi-info-circle"></i> À propos
@@ -59,6 +67,13 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="Infospersonnelles">Informations Personnelles</a></li>
+                            @if (User.IsInRole("Vendeur"))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Vendeur" asp-action="Index"><i class="bi bi-shop-window"></i> Ma Boutique</a></li>
+                                <li><a class="dropdown-item" asp-controller="Vendeur" asp-action="AjouterProduit"><i class="bi bi-plus-circle"></i> Ajouter un produit</a></li>
+                                <li><a class="dropdown-item" asp-controller="Vendeur" asp-action="Ventes"><i class="bi bi-graph-up"></i> Mes Ventes</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                            }
                             <li><a class="dropdown-item" asp-controller="GestionDuCompte" asp-action="Deconnexion">Déconnexion</a></li>
                         }
                         else

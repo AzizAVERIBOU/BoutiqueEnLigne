@@ -1,0 +1,242 @@
+/* Styles pour la page Index (liste des produits) */
+.vendeur-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.vendeur-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.vendeur-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.vendeur-card .card-body {
+    padding: 1.5rem;
+}
+
+.vendeur-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.vendeur-card .card-text {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.vendeur-card .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.vendeur-card .stock-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.vendeur-card .btn-group {
+    border-top: 1px solid #eee;
+    padding: 1rem;
+}
+
+.vendeur-card .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Styles pour la page Ajouter/Modifier un produit */
+.vendeur-form-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.vendeur-form-card .card-header {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    padding: 1.5rem;
+}
+
+.vendeur-form-card .card-body {
+    padding: 2rem;
+}
+
+.vendeur-form-card .form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.vendeur-form-card .form-control {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.vendeur-form-card .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+.vendeur-form-card .btn-primary {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+/* Styles pour la page Ventes */
+.vendeur-ventes-table {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.vendeur-ventes-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+}
+
+.vendeur-ventes-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.vendeur-ventes-table .badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+/* Styles pour les boutons d'action */
+.vendeur-action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+.vendeur-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Styles pour les messages d'alerte */
+.vendeur-alert {
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Styles pour les titres de page */
+.vendeur-page-title {
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #0d6efd;
+}
+
+/* Styles pour les icônes */
+.vendeur-icon {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Styles pour les badges de statut */
+.vendeur-status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.vendeur-status-badge.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.vendeur-status-badge.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.vendeur-status-badge.danger {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Styles pour les tableaux de données */
+.vendeur-data-table {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.vendeur-data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.vendeur-data-table td {
+    vertical-align: middle;
+}
+
+/* Styles pour les formulaires */
+.vendeur-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.vendeur-form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.vendeur-form-group .form-control {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.vendeur-form-group .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+/* Styles pour les boutons */
+.vendeur-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.vendeur-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.vendeur-btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.vendeur-btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.vendeur-btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.vendeur-btn-secondary:hover {
+    background-color: #5c636a;
+    border-color: #565e64;
+} 
