@@ -143,22 +143,51 @@ namespace BoutiqueEnLigne.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var panier = HttpContext.Session.GetString("Panier");
-            var items = string.IsNullOrEmpty(panier) ? new List<object>() : JsonSerializer.Deserialize<List<object>>(panier);
-
-            if (items.Count == 0)
+            try
             {
-                TempData["Message"] = "Votre panier est vide.";
+                var panier = HttpContext.Session.GetString("Panier");
+                _logger.LogInformation($"Contenu brut du panier: {panier}");
+
+                var items = new List<Dictionary<string, object>>();
+                if (!string.IsNullOrEmpty(panier))
+                {
+                    var panierItems = JsonSerializer.Deserialize<List<object>>(panier);
+                    foreach (var item in panierItems)
+                    {
+                        var itemDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(item.ToString());
+                        items.Add(new Dictionary<string, object>
+                        {
+                            ["ProduitId"] = itemDict["ProduitId"].GetInt32(),
+                            ["Nom"] = itemDict["Nom"].GetString(),
+                            ["Prix"] = itemDict["Prix"].GetDecimal(),
+                            ["Quantite"] = itemDict["Quantite"].GetInt32(),
+                            ["Image"] = itemDict.ContainsKey("Image") ? itemDict["Image"].GetString() : "/images/default-product.jpg"
+                        });
+                    }
+                }
+
+                if (items.Count == 0)
+                {
+                    TempData["Message"] = "Votre panier est vide.";
+                    return RedirectToAction("Panier");
+                }
+
+                decimal total = items.Sum(item => (decimal)item["Prix"] * (int)item["Quantite"]);
+                
+                ViewBag.Items = items;
+                ViewBag.Total = total;
+                
+                _logger.LogInformation($"Nombre d'articles dans le panier: {items.Count}");
+                _logger.LogInformation($"Total du panier: {total}");
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du traitement du panier");
+                TempData["Error"] = "Une erreur est survenue lors du chargement de la page de paiement.";
                 return RedirectToAction("Panier");
             }
-
-            ViewBag.Items = items;
-            ViewBag.Total = items.Sum(i => {
-                var item = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(i.ToString());
-                return item["Prix"].GetDecimal() * item["Quantite"].GetInt32();
-            });
-            
-            return View();
         }
 
         public IActionResult Validation()
