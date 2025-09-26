@@ -1,82 +1,496 @@
-# Fichiers de configuration sensibles
-appsettings.*.json
-!appsettings.json
-appsettings.Development.json
-appsettings.Production.json
+# Fichiers de build
+bin/
+obj/
+out/
 
-# Fichiers de secrets
-secrets.json
-
-# Fichiers de l'IDE
-.vs/
-.vscode/
+# Fichiers de l'utilisateur
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Fichiers de compilation
-bin/
-obj/
-*.dll
-*.pdb
-*.exe
+# Fichiers de l'IDE
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Fichiers de test
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Fichiers de package NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+!packages/repositories.config
+
+# Fichiers de cache
+.nuget/
+.nuget/packages/
+.nuget/project.assets.json
+.nuget/project.nuget.props
+.nuget/project.nuget.xml
 
 # Fichiers de logs
 *.log
 logs/
 
+# Fichiers de base de données
+*.mdf
+*.ldf
+*.ndf
+
+# Fichiers de configuration sensibles
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+secrets.json
+
+# Fichiers de clés API
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Fichiers de déploiement
+publish/
+wwwroot/dist/
+
 # Fichiers temporaires
 *.tmp
 *.temp
-*.swp
-*~
+*.bak
+*.backup
 
-# Fichiers de dépendances
+# Fichiers de système d'exploitation
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Fichiers de Node.js (si utilisé)
 node_modules/
-packages/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-build/
-bld/
-[Bb]in/
-[Oo]bj/
-[Oo]ut/
-msbuild.log
-msbuild.err
-msbuild.wrn
+# Fichiers de Docker
+.dockerignore
+Dockerfile.dev
 
-# Visual Studio cache/options directory
-.vs/
+# Fichiers de certificats SSL
+*.crt
+*.csr
+*.der
 
-# ReSharper
-_ReSharper*/
-*.[Rr]e[Ss]harper
-*.DotSettings.user
+# Fichiers de base de données SQLite
+*.db
+*.sqlite
+*.sqlite3
 
-# Visual Studio profiler
+# Fichiers de cache Redis
+dump.rdb
+
+# Fichiers de logs IIS
+*.log
+
+# Fichiers de profilage
 *.psess
 *.vsp
 *.vspx
 *.sap
 
-# User-specific files
-*.rsuser
-*.user
-*.userosscache
-*.sln.docstates
+# Fichiers de couverture de code
+coverage/
+*.coverage
+*.coveragexml
 
-# NuGet Packages
-*.nupkg
-# NuGet Symbol Packages
-*.snupkg
-# The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
-# except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/ 
+# Fichiers de documentation générés
+docs/_site/
+docs/.jekyll-cache/
+
+# Fichiers de migration personnalisés
+Migrations/Custom/
+
+# Fichiers de configuration locale
+local.settings.json
+launchSettings.json.local
+
+# Fichiers de cache Entity Framework
+*.edmx.diagram
+*.edmx.sql
+
+# Fichiers de cache ASP.NET
+App_Data/
+App_Code/
+App_GlobalResources/
+App_LocalResources/
+
+# Fichiers de cache SignalR
+signalr/
+
+# Fichiers de cache Blazor
+blazor/
+
+# Fichiers de cache Razor
+razor/
+
+# Fichiers de cache MVC
+mvc/
+
+# Fichiers de cache Web API
+webapi/
+
+# Fichiers de cache Identity
+identity/
+
+# Fichiers de cache Authentication
+auth/
+
+# Fichiers de cache Authorization
+authorization/
+
+# Fichiers de cache CORS
+cors/
+
+# Fichiers de cache HTTPS
+https/
+
+# Fichiers de cache HSTS
+hsts/
+
+# Fichiers de cache CSP
+csp/
+
+# Fichiers de cache XSS
+xss/
+
+# Fichiers de cache CSRF
+csrf/
+
+# Fichiers de cache SQL Injection
+sql/
+
+# Fichiers de cache XSS
+xss/
+
+# Fichiers de cache Path Traversal
+path/
+
+# Fichiers de cache Directory Traversal
+directory/
+
+# Fichiers de cache File Upload
+upload/
+
+# Fichiers de cache File Download
+download/
+
+# Fichiers de cache File System
+filesystem/
+
+# Fichiers de cache Network
+network/
+
+# Fichiers de cache Security
+security/
+
+# Fichiers de cache Performance
+performance/
+
+# Fichiers de cache Monitoring
+monitoring/
+
+# Fichiers de cache Logging
+logging/
+
+# Fichiers de cache Error Handling
+error/
+
+# Fichiers de cache Exception Handling
+exception/
+
+# Fichiers de cache Validation
+validation/
+
+# Fichiers de cache Serialization
+serialization/
+
+# Fichiers de cache Deserialization
+deserialization/
+
+# Fichiers de cache JSON
+json/
+
+# Fichiers de cache XML
+xml/
+
+# Fichiers de cache YAML
+yaml/
+
+# Fichiers de cache TOML
+toml/
+
+# Fichiers de cache INI
+ini/
+
+# Fichiers de cache CSV
+csv/
+
+# Fichiers de cache TSV
+tsv/
+
+# Fichiers de cache Excel
+excel/
+
+# Fichiers de cache PDF
+pdf/
+
+# Fichiers de cache Word
+word/
+
+# Fichiers de cache PowerPoint
+powerpoint/
+
+# Fichiers de cache Image
+image/
+
+# Fichiers de cache Video
+video/
+
+# Fichiers de cache Audio
+audio/
+
+# Fichiers de cache Archive
+archive/
+
+# Fichiers de cache Compression
+compression/
+
+# Fichiers de cache Encryption
+encryption/
+
+# Fichiers de cache Decryption
+decryption/
+
+# Fichiers de cache Hashing
+hashing/
+
+# Fichiers de cache Checksum
+checksum/
+
+# Fichiers de cache Signature
+signature/
+
+# Fichiers de cache Verification
+verification/
+
+# Fichiers de cache Authentication
+authentication/
+
+# Fichiers de cache Authorization
+authorization/
+
+# Fichiers de cache Session
+session/
+
+# Fichiers de cache Cookie
+cookie/
+
+# Fichiers de cache Token
+token/
+
+# Fichiers de cache JWT
+jwt/
+
+# Fichiers de cache OAuth
+oauth/
+
+# Fichiers de cache OpenID
+openid/
+
+# Fichiers de cache SAML
+saml/
+
+# Fichiers de cache LDAP
+ldap/
+
+# Fichiers de cache Active Directory
+activedirectory/
+
+# Fichiers de cache Kerberos
+kerberos/
+
+# Fichiers de cache NTLM
+ntlm/
+
+# Fichiers de cache Basic Auth
+basicauth/
+
+# Fichiers de cache Digest Auth
+digestauth/
+
+# Fichiers de cache Bearer Token
+bearertoken/
+
+# Fichiers de cache API Key
+apikey/
+
+# Fichiers de cache HMAC
+hmac/
+
+# Fichiers de cache RSA
+rsa/
+
+# Fichiers de cache AES
+aes/
+
+# Fichiers de cache DES
+des/
+
+# Fichiers de cache 3DES
+3des/
+
+# Fichiers de cache Blowfish
+blowfish/
+
+# Fichiers de cache Twofish
+twofish/
+
+# Fichiers de cache Serpent
+serpent/
+
+# Fichiers de cache Camellia
+camellia/
+
+# Fichiers de cache IDEA
+idea/
+
+# Fichiers de cache RC4
+rc4/
+
+# Fichiers de cache RC5
+rc5/
+
+# Fichiers de cache RC6
+rc6/
+
+# Fichiers de cache Skipjack
+skipjack/
+
+# Fichiers de cache TEA
+tea/
+
+# Fichiers de cache XTEA
+xtea/
+
+# Fichiers de cache XXTEA
+xxtea/
+
+# Fichiers de cache ChaCha20
+chacha20/
+
+# Fichiers de cache Salsa20
+salsa20/
+
+# Fichiers de cache Poly1305
+poly1305/
+
+# Fichiers de cache GCM
+gcm/
+
+# Fichiers de cache CCM
+ccm/
+
+# Fichiers de cache EAX
+eax/
+
+# Fichiers de cache OCB
+ocb/
+
+# Fichiers de cache CTR
+ctr/
+
+# Fichiers de cache CFB
+cfb/
+
+# Fichiers de cache OFB
+ofb/
+
+# Fichiers de cache CBC
+cbc/
+
+# Fichiers de cache ECB
+ecb/
+
+# Fichiers de cache PCBC
+pcbc/
+
+# Fichiers de cache CFB8
+cfb8/
+
+# Fichiers de cache OFB8
+ofb8/
+
+# Fichiers de cache CTR8
+ctr8/
+
+# Fichiers de cache GCM8
+gcm8/
+
+# Fichiers de cache CCM8
+ccm8/
+
+# Fichiers de cache EAX8
+eax8/
+
+# Fichiers de cache OCB8
+ocb8/
+
+# Fichiers de cache PCBC8
+pcbc8/
+
+# Fichiers de cache CBC8
+cbc8/
+
+# Fichiers de cache ECB8
+ecb8/
+
+# Fichiers de cache CFB1
+cfb1/
+
+# Fichiers de cache OFB1
+ofb1/
+
+# Fichiers de cache CTR1
+ctr1/
+
+# Fichiers de cache GCM1
+gcm1/
+
+# Fichiers de cache CCM1
+ccm1/
+
+# Fichiers de cache EAX1
+eax1/
+
+# Fichiers de cache OCB1
+ocb1/
+
+# Fichiers de cache PCBC1
+pcbc1/
+
+# Fichiers de cache CBC1
+cbc1/
+
+# Fichiers de cache ECB1
+ecb1/
