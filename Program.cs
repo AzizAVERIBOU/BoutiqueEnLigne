@@ -79,3 +79,5 @@ app.MapControllerRoute(
     pattern: "{controller=Accueil}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program { }

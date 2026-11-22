@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
     <UserSecretsId>3c0e5c32-1b4d-4f1a-ba79-90db253eecbe</UserSecretsId>
   </PropertyGroup>
 
