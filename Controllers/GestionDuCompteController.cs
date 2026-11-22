@@ -57,8 +57,6 @@ namespace BoutiqueEnLigne.Controllers
                 if (localUser != null)
                 {
                     Console.WriteLine($"Utilisateur trouvé dans la base locale: Email={localUser.Email}, Id={localUser.Id}");
-                    Console.WriteLine($"Mot de passe stocké: {localUser.MotDePasse}");
-                    Console.WriteLine($"Mot de passe fourni: {motDePasse}");
                     
                     bool passwordValid = false;
                     try

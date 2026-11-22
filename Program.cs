@@ -23,9 +23,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/GestionDuCompte/Deconnexion";
     });
 
-// Configuration de Stripe
-builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe")); 
-StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+// Configuration de Stripe. La clé secrète vient des user-secrets ou des variables d'environnement.
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+if (!string.IsNullOrWhiteSpace(stripeSecretKey))
+{
+    StripeConfiguration.ApiKey = stripeSecretKey;
+}
 
 // Configuration des services HTTP
 builder.Services.AddHttpClient();

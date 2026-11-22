@@ -130,7 +130,7 @@ namespace BoutiqueEnLigne.Controllers
                 // Créer les options de la session Stripe
                 var options = new SessionCreateOptions
                 {
-                    PaymentMethodTypes = new List<string> { "card" },
+                    AllowedPaymentMethodTypes = new List<string> { "card" },
                     LineItems = items.Select(item => new SessionLineItemOptions
                     {
                         PriceData = new SessionLineItemPriceDataOptions

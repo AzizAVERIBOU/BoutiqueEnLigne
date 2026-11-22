@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using BoutiqueEnLigne.Models.User;
 using BoutiqueEnLigne.Data;
@@ -54,12 +56,19 @@ namespace BoutiqueEnLigne.Services
         {
             try
             {
-                Console.WriteLine($"Tentative d'authentification pour l'email: {email}");
+                _logger.LogInformation("Tentative d'authentification API pour {Email}", email);
                 var users = await GetUsersAsync();
-                var user = users.FirstOrDefault(u => u.Email == email);
+                var user = users.FirstOrDefault(u =>
+                    string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase));
 
                 if (user != null)
                 {
+                    if (!MotDePasseCorrespond(user.Password, password))
+                    {
+                        _logger.LogWarning("Mot de passe incorrect pour l'authentification API de {Email}", email);
+                        return null;
+                    }
+
                     Console.WriteLine("\n=== DONNÉES DE L'UTILISATEUR TROUVÉ DANS L'API ===");
                     Console.WriteLine($"ID: {user.Id}");
                     Console.WriteLine($"Email: {user.Email}");
@@ -84,15 +93,6 @@ namespace BoutiqueEnLigne.Services
                         }
                     }
 
-                    if (user.Bank != null)
-                    {
-                        Console.WriteLine("\n=== INFORMATIONS BANCAIRES ===");
-                        Console.WriteLine($"Carte: {user.Bank.CardNumber}");
-                        Console.WriteLine($"Type: {user.Bank.CardType}");
-                        Console.WriteLine($"Expiration: {user.Bank.CardExpire}");
-                        Console.WriteLine($"IBAN: {user.Bank.Iban}");
-                    }
-
                     if (user.Company != null)
                     {
                         Console.WriteLine("\n=== ENTREPRISE ===");
@@ -113,7 +113,7 @@ namespace BoutiqueEnLigne.Services
                     var newUser = new User
                     {
                         Email = user.Email,
-                        MotDePasse = password,
+                        MotDePasse = BCrypt.Net.BCrypt.HashPassword(password),
                         Nom = user.LastName,
                         Prenom = user.FirstName,
                         DateInscription = DateTime.Now,
@@ -336,6 +336,18 @@ namespace BoutiqueEnLigne.Services
                 _logger.LogError(ex, "Erreur lors de la récupération de la structure de l'API");
                 throw;
             }
+        }
+
+        private static bool MotDePasseCorrespond(string? attendu, string? fourni)
+        {
+            if (string.IsNullOrEmpty(attendu) || string.IsNullOrEmpty(fourni))
+            {
+                return false;
+            }
+
+            var hashAttendu = SHA256.HashData(Encoding.UTF8.GetBytes(attendu));
+            var hashFourni = SHA256.HashData(Encoding.UTF8.GetBytes(fourni));
+            return CryptographicOperations.FixedTimeEquals(hashAttendu, hashFourni);
         }
     }
 
