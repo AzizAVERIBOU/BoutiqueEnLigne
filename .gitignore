@@ -60,6 +60,7 @@ secrets.json
 
 # Fichiers de déploiement
 publish/
+artifacts/
 wwwroot/dist/
 
 # Fichiers temporaires

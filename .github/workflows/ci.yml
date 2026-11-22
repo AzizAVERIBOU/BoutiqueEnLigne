@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verifier:
+    name: Compilation, tests et publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Restaurer les packages
+        run: dotnet restore BoutiqueEnLigne.sln --locked-mode
+
+      - name: Compiler
+        run: dotnet build BoutiqueEnLigne.sln --configuration Release --no-restore
+
+      - name: Tester
+        run: dotnet test BoutiqueEnLigne.sln --configuration Release --no-build --logger "trx;LogFileName=resultats.trx"
+
+      - name: Conserver les résultats de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultats-tests
+          path: "**/resultats.trx"
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Publier l'application
+        run: dotnet publish BoutiqueEnLigne.csproj --configuration Release --no-build --output ./artifacts/publish
+
+      - name: Conserver l'application publiée
+        uses: actions/upload-artifact@v4
+        with:
+          name: boutique-en-ligne
+          path: artifacts/publish
+          retention-days: 7
