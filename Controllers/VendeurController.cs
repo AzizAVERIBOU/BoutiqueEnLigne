@@ -35,10 +35,12 @@ namespace BoutiqueEnLigne.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AjouterProduit(ProduitVendeur produit)
         {
+            ModelState.Remove(nameof(ProduitVendeur.Vendeur));
             if (ModelState.IsValid)
             {
                 var vendeurId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 produit.VendeurId = vendeurId;
+                produit.Vendeur = null;
                 produit.DateAjout = DateTime.Now;
                 produit.EstActif = true;
 
@@ -77,16 +79,22 @@ namespace BoutiqueEnLigne.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove(nameof(ProduitVendeur.Vendeur));
+            var vendeurId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var appartientAuVendeur = await _context.ProduitsVendeurs
+                .AnyAsync(p => p.Id == id && p.VendeurId == vendeurId);
+            if (!appartientAuVendeur)
+            {
+                return Forbid();
+            }
+
+            produit.VendeurId = vendeurId;
+            produit.Vendeur = null;
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var vendeurId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                    if (produit.VendeurId != vendeurId)
-                    {
-                        return Forbid();
-                    }
-
                     _context.Update(produit);
                     await _context.SaveChangesAsync();
                 }

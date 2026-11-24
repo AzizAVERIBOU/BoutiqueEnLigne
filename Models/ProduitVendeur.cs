@@ -1,8 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Utilisateur = BoutiqueEnLigne.Models.User.User;
 
 namespace BoutiqueEnLigne.Models
 {
+    /// <summary>
+    /// Produit unique du catalogue. Le vendeur écrit ici ; la vitrine lira cette table à l'étape suivante.
+    /// </summary>
     public class ProduitVendeur
     {
         [Key]
@@ -24,13 +28,17 @@ namespace BoutiqueEnLigne.Models
         [Range(0, 1000, ErrorMessage = "La quantité doit être comprise entre 0 et 1000")]
         public int QuantiteEnStock { get; set; }
 
+        [Required(ErrorMessage = "La catégorie est requise")]
+        [StringLength(100, ErrorMessage = "La catégorie ne peut pas dépasser 100 caractères")]
+        public string Categorie { get; set; } = string.Empty;
+
         public string? ImageUrl { get; set; }
 
         [Required]
         public int VendeurId { get; set; }
 
-        [ForeignKey("VendeurId")]
-        public Vendeur Vendeur { get; set; }
+        [ForeignKey(nameof(VendeurId))]
+        public Utilisateur? Vendeur { get; set; }
 
         public DateTime DateAjout { get; set; } = DateTime.Now;
 
