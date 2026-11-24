@@ -57,11 +57,11 @@
       },
       "Microsoft.EntityFrameworkCore.Tools": {
         "type": "Direct",
-        "requested": "[9.0.23, )",
-        "resolved": "9.0.23",
-        "contentHash": "0toi+DmsjPhB2021zBLISl1waVP4i5TEWcPM8G54S38Z4lVd2QougWVgNFColuQKyiYsPMAHaZ9VThJJTh3CIQ==",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "Bt4XAuvcawtLn61wzS2wOC5iVO4PnY37A7LgrmogYNW/iwl8bnb7CD9hi89OIU1n9d+wiPzCW3WubbDU4KwXog==",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore.Design": "9.0.23"
+          "Microsoft.EntityFrameworkCore.Design": "8.0.26"
         }
       },
       "Stripe.net": {
