@@ -1,4 +1,5 @@
 @model BoutiqueEnLigne.Models.ProduitVendeur
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Ajouter un produit";
@@ -51,6 +52,12 @@
                                     <span asp-validation-for="QuantiteEnStock" class="text-danger"></span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="vendeur-form-group">
+                            <label asp-for="Categorie" class="form-label">Catégorie</label>
+                            <input asp-for="Categorie" class="form-control" />
+                            <span asp-validation-for="Categorie" class="text-danger"></span>
                         </div>
 
                         <div class="vendeur-form-group">
