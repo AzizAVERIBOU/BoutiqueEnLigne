@@ -1,329 +1,113 @@
 # BoutiqueEnLigne
 
-Une application de commerce électronique moderne développée avec ASP.NET Core MVC, offrant une expérience d'achat complète avec gestion des utilisateurs, des produits, des commandes et des paiements.
+Travail pratique réalisé dans un cadre scolaire par Aziz AVERIBOU et Mor DIONGUE.
 
-## Table des matières
+Application web de boutique en ASP.NET Core MVC. Un visiteur parcourt un catalogue, constitue un panier et peut payer avec Stripe. Un vendeur inscrit enregistre ses propres articles dans SQL Server.
 
-- [Fonctionnalités](#-fonctionnalités)
-- [Technologies utilisées](#-technologies-utilisées)
-- [Prérequis](#-prérequis)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Utilisation](#-utilisation)
-- [Structure du projet](#-structure-du-projet)
-- [API et services externes](#-api-et-services-externes)
-- [Base de données](#-base-de-données)
-- [Déploiement](#-déploiement)
-- [Contribution](#-contribution)
-- [Licence](#-licence)
+Dépôt : [github.com/AzizAVERIBOU/BoutiqueEnLigne](https://github.com/AzizAVERIBOU/BoutiqueEnLigne)
 
-## Fonctionnalités
+## Parcours
 
-### Commerce électronique
-- **Catalogue de produits** avec pagination et filtrage par catégories
-- **Recherche avancée** par nom, description, marque et catégorie
-- **Panier d'achat** persistant avec gestion des quantités
-- **Système de favoris** pour sauvegarder les produits préférés
-- **Paiement sécurisé** via Stripe Checkout
-- **Gestion des commandes** avec suivi des statuts
+### Visiteur
 
-### Gestion des utilisateurs
-- **Inscription et connexion** avec validation des données
-- **Rôles multiples** : Client, Vendeur, Administrateur
-- **Profil utilisateur** avec informations personnelles
-- **Gestion des adresses** et informations de livraison
-- **Historique des commandes** et factures
+- L'accueil liste les produits, avec pagination.
+- Une fiche détaille un article.
+- Les catégories et la recherche filtrent le catalogue.
+- Le panier et les favoris sont gardés dans la session.
 
-### Espace vendeur
-- **Tableau de bord** pour les vendeurs
-- **Gestion des produits** (ajout, modification, suppression)
-- **Suivi des ventes** et statistiques
-- **Gestion des commandes** reçues
+Ces écrans lisent le catalogue public de [DummyJSON](https://dummyjson.com).
 
-### Sécurité
-- **Authentification par cookies** avec sessions persistantes
-- **Hachage des mots de passe** avec BCrypt
-- **Validation des données** côté serveur et client
-- **Protection CSRF** avec tokens anti-forgery
-- **Gestion des rôles** et autorisations
+### Compte
 
-## Technologies utilisées
+- Inscription avec le rôle Client ou Vendeur.
+- Connexion par cookie.
+- Profil, adresses et page de sécurité.
 
-### Arrière-plan
-- **ASP.NET Core MVC 8.0** - Cadre d'application web principal
-- **Entity Framework Core 9.0.3** - ORM pour la base de données
-- **SQL Server** - Base de données relationnelle
-- **BCrypt.Net-Next 4.0.3** - Hachage sécurisé des mots de passe
-- **Stripe.net 48.0.0** - Intégration des paiements
+Les mots de passe enregistrés par l'application sont hachés avec BCrypt.
 
-### Interface utilisateur
-- **Bootstrap 5.3.2** - Cadre CSS adaptatif
-- **jQuery 3.7.1** - Bibliothèque JavaScript
-- **Bootstrap Icons** - Icônes vectorielles
-- **AJAX** - Interactions asynchrones
+### Vendeur
 
-### API externes
-- **DummyJSON** - Données de produits et utilisateurs de test
+Après connexion avec le rôle Vendeur :
 
-## Prérequis
+- `/Vendeur` liste les articles de ce vendeur ;
+- `/Vendeur/AjouterProduit` enregistre un article : nom, description, prix, stock, catégorie et URL d'image.
 
-- **.NET 8.0 SDK** ou version ultérieure
-- **SQL Server** (LocalDB, Express ou version complète)
-- **Visual Studio 2022** ou **Visual Studio Code**
-- **Git** pour le contrôle de versions
+Ces articles sont écrits dans la table `ProduitsVendeurs`. L'identifiant du vendeur est celui du compte connecté, dans `Users`. La vitrine ne lit pas encore cette table : les deux catalogues sont séparés.
 
-## Installation
+### Paiement
 
-### 1. Cloner le dépôt
+Le panier ouvre une session Stripe Checkout. Les clés ne sont pas dans le dépôt. Sans clé secrète, la session n'est pas créée.
+
+## Pile
+
+| Rôle | Choix |
+| --- | --- |
+| Application | ASP.NET Core MVC, .NET 8 |
+| Données | Entity Framework Core 9, SQL Server LocalDB |
+| Mots de passe | BCrypt.Net-Next |
+| Paiement | Stripe.net |
+| Interface | Razor, Bootstrap 5.3, Bootstrap Icons, jQuery |
+| Catalogue visiteur | API DummyJSON |
+| Tests | xUnit, deux tests de fumée |
+| Intégration continue | GitHub Actions sur `main` et `develop` |
+
+## Démarrage
+
+Prérequis : SDK .NET 8 et SQL Server LocalDB.
+
 ```bash
-git clone https://github.com/votre-username/BoutiqueEnLigne.git
+git clone https://github.com/AzizAVERIBOU/BoutiqueEnLigne.git
 cd BoutiqueEnLigne
+dotnet restore BoutiqueEnLigne.sln --locked-mode
+dotnet ef database update --project BoutiqueEnLigne.csproj
+dotnet run --launch-profile http
 ```
 
-### 2. Restaurer les paquets NuGet
-```bash
-dotnet restore
-```
+L'application écoute sur http://localhost:5118.
 
-### 3. Configurer la base de données
-```bash
-# Créer la base de données
-dotnet ef database update
-```
+Pour essayer l'espace vendeur : s'inscrire avec le rôle Vendeur, se connecter, puis ouvrir **Ajouter un produit**.
 
-### 4. Démarrer l'application
-```bash
-dotnet run
-```
+La commande `dotnet ef` demande l'outil Entity Framework installé sur la machine (`dotnet tool install --global dotnet-ef`).
 
-L'application sera accessible à l'adresse : `https://localhost:7000`
+### Clés Stripe
 
-## Configuration
-
-### 1. Configuration de la base de données
-
-Modifiez le fichier `appsettings.json` :
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=BoutiqueEnLigne;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False"
-  }
-}
-```
-
-### 2. Configuration de Stripe
-
-Créez un fichier `appsettings.Development.json` :
-
-```json
-{
-  "Stripe": {
-    "SecretKey": "sk_test_votre_cle_secrete_stripe",
-    "PublishableKey": "pk_test_votre_cle_publique_stripe"
-  }
-}
-```
-
-### 3. Variables d'environnement (Production)
+`appsettings.json` laisse les clés vides. En développement :
 
 ```bash
-export Stripe__SecretKey="sk_live_votre_cle_secrete_production"
-export Stripe__PublishableKey="pk_live_votre_cle_publique_production"
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_..."
+dotnet user-secrets set "Stripe:PublishableKey" "pk_test_..."
 ```
 
-## Utilisation
+La chaîne de connexion LocalDB reste dans `appsettings.json`.
 
-### 👤 Comptes de test
+### Tests
 
-#### Client
-- **Email** : `john@example.com`
-- **Mot de passe** : `password123`
+```bash
+dotnet test BoutiqueEnLigne.sln --configuration Release
+```
 
-#### Vendeur
-- **Email** : `jane@example.com`
-- **Mot de passe** : `password123`
+Le pipeline restaure les paquets en mode verrouillé, compile en Release, lance les tests et publie l'application.
 
-### Parcours d'achat
-
-1. **Navigation** : Parcourez les produits par catégorie ou utilisez la recherche
-2. **Sélection** : Ajoutez des produits au panier ou aux favoris
-3. **Connexion** : Connectez-vous ou créez un compte
-4. **Commande** : Validez votre panier et procédez au paiement
-5. **Paiement** : Utilisez Stripe Checkout pour finaliser l'achat
-
-### 🏪 Espace vendeur
-
-1. **Connexion** : Connectez-vous avec un compte vendeur
-2. **Produits** : Gérez votre catalogue de produits
-3. **Ventes** : Consultez vos statistiques de ventes
-4. **Commandes** : Traitez les commandes reçues
-
-## Structure du projet
+## Code
 
 ```
 BoutiqueEnLigne/
-├── Controllers/              # Contrôleurs MVC
-│   ├── AccueilController.cs     # Page d'accueil et produits
-│   ├── AccountController.cs     # Authentification
-│   ├── GestionDuCompteController.cs # Gestion du compte utilisateur
-│   ├── PaiementController.cs    # Paiements et panier
-│   ├── ProduitController.cs     # Recherche de produits
-│   └── VendeurController.cs     # Espace vendeur
-├── Models/                   # Modèles de données
-│   ├── User/                    # Modèles utilisateur
-│   ├── ViewModels/              # Modèles de vue
-│   ├── Product.cs               # Modèle produit
-│   ├── Commande.cs              # Modèle commande
-│   └── Enums.cs                 # Énumérations
-├── Views/                    # Vues Razor
-│   ├── Accueil/                 # Vues de la page d'accueil
-│   ├── GestionDuCompte/         # Vues de gestion du compte
-│   ├── Paiement/                # Vues de paiement
-│   ├── Shared/                  # Vues partagées
-│   └── Vendeur/                 # Vues de l'espace vendeur
-├── Services/                 # Services métier
-│   ├── ProductApiService.cs     # Service produits API
-│   ├── AuthApiService.cs        # Service authentification
-│   └── UserApiService.cs        # Service utilisateurs
-├── Data/                     # Accès aux données
-│   └── BoutiqueEnLigneContext.cs # Contexte Entity Framework
-├── Migrations/               # Migrations de base de données
-├── wwwroot/                  # Fichiers statiques
-│   ├── css/                     # Feuilles de style
-│   ├── js/                      # Scripts JavaScript
-│   └── images/                  # Images
-└── Properties/               # Configuration du projet
+├── Controllers/          Accueil, compte, paiement, recherche, vendeur
+├── Models/               utilisateurs, ProduitVendeur, commandes
+├── Views/                pages Razor
+├── Services/             appels à DummyJSON
+├── Data/                 contexte Entity Framework
+├── Migrations/           schéma SQL Server
+├── tests/                tests de fumée
+└── .github/workflows/    pipeline
 ```
 
-## 🔌 API et services externes
+Les branches de travail partent de `develop`. `main` reste la ligne stable.
 
-### DummyJSON
-L'application utilise l'API DummyJSON pour :
-- **Produits** : Catalogue de produits de test
-- **Utilisateurs** : Données utilisateur pour l'authentification
-- **Base URL** : `https://dummyjson.com`
+## Licence
 
-### Stripe
-Intégration complète de Stripe pour :
-- **Paiements** : Traitement sécurisé des transactions
-- **Checkout** : Interface de paiement intégrée
-- **Webhooks** : Notifications de paiement (à implémenter)
+MIT. Voir [LICENSE](LICENSE).
 
-## Base de données
+## Portfolio
 
-### Modèles principaux
-
-#### Users
-- **User** : Classe de base avec informations communes
-- **Client** : Utilisateur avec fonctionnalités d'achat
-- **Vendeur** : Utilisateur avec fonctionnalités de vente
-
-#### Produits et commandes
-- **Product** : Produits avec images, prix, stock
-- **Commande** : Commandes avec statuts et validation
-- **Facture** : Factures avec TVA et montants
-- **Panier** : Panier utilisateur (session)
-
-#### Relations
-- **ClientVendeur** : Relation many-to-many
-- **Address, Bank, Company** : Informations utilisateur
-
-### Migrations
-```bash
-# Créer une nouvelle migration
-dotnet ef migrations add NomDeLaMigration
-
-# Appliquer les migrations
-dotnet ef database update
-
-# Supprimer la dernière migration
-dotnet ef migrations remove
-```
-
-## Déploiement
-
-### Déploiement local
-```bash
-# Build en mode Release
-dotnet build --configuration Release
-
-# Publier l'application
-dotnet publish --configuration Release --output ./publish
-
-# Lancer l'application publiée
-dotnet ./publish/BoutiqueEnLigne.dll
-```
-
-### Déploiement Azure
-1. **Azure App Service** : Déployez l'application
-2. **Azure SQL Database** : Configurez la base de données
-3. **Variables d'environnement** : Configurez Stripe et la connexion DB
-4. **SSL** : Activez HTTPS
-
-### Déploiement Docker
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY ["BoutiqueEnLigne.csproj", "."]
-RUN dotnet restore
-COPY . .
-RUN dotnet build --configuration Release --no-restore
-
-FROM build AS publish
-RUN dotnet publish --configuration Release --no-build --output /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "BoutiqueEnLigne.dll"]
-```
-
-## Contribution
-
-### Comment contribuer
-
-1. **Fork** le projet
-2. **Créer** une branche pour votre fonctionnalité (`git basculer -b feature/FonctionnaliteGeniale`)
-3. **Valider** vos changements (`git commit -m 'Ajouter une fonctionnalité géniale'`)
-4. **Pousser** vers la branche (`git push origin feature/FonctionnaliteGeniale`)
-5. **Ouvrir** une Demande de tirage
-
-### Standards de code
-
-- **C#** : Suivez les conventions Microsoft
-- **CSS** : Utilisez Bootstrap et les classes personnalisées
-- **JavaScript** : Code ES6+ avec jQuery
-- **Documentation** : Commentez le code complexe
-
-### Problèmes et bugs
-
-- **Rapports de bugs** : Utilisez le modèle d'issue
-- **Demandes de fonctionnalités** : Décrivez clairement la fonctionnalité
-- **Questions** : Utilisez les discussions GitHub
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## Support
-
-- **Email** : azizaveribou6123@gmail.com ou mordiongue100@gmail.com
-- **Documentation** : [Wiki du projet](https://github.com/votre-username/BoutiqueEnLigne/wiki)
-- **Problèmes** : [GitHub Issues](https://github.com/votre-username/BoutiqueEnLigne/issues)
-
-## Remerciements
-
-- **Bootstrap** pour le cadre CSS
-- **Stripe** pour l'intégration des paiements
-- **DummyJSON** pour les données de test
-- **Microsoft** pour ASP.NET Core
-
----
-
-**Développé avec passion en ASP.NET Core**
+[profil-aziz.vercel.app](https://profil-aziz.vercel.app/)

@@ -1,3 +1,6 @@
+# Notes de travail locales
+PLAN-RETABLISSEMENT.md
+
 # Fichiers de build
 bin/
 obj/
@@ -60,6 +63,7 @@ secrets.json
 
 # Fichiers de déploiement
 publish/
+artifacts/
 wwwroot/dist/
 
 # Fichiers temporaires

@@ -163,7 +163,7 @@ namespace BoutiqueEnLigne.Data
                 .HasForeignKey(p => p.ClientAchatId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configuration de la relation ProduitVendeur-Vendeur
+            // Le vendeur inscrit est un User avec le rôle Vendeur, pas la sous-classe Vendeur.
             modelBuilder.Entity<ProduitVendeur>()
                 .HasOne(pv => pv.Vendeur)
                 .WithMany()

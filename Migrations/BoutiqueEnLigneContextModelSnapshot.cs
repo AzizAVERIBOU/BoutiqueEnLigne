@@ -17,7 +17,7 @@ namespace BoutiqueEnLigne.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -302,6 +302,11 @@ namespace BoutiqueEnLigne.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Categorie")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("DateAjout")
                         .HasColumnType("datetime2");
@@ -710,7 +715,7 @@ namespace BoutiqueEnLigne.Migrations
 
             modelBuilder.Entity("BoutiqueEnLigne.Models.ProduitVendeur", b =>
                 {
-                    b.HasOne("BoutiqueEnLigne.Models.Vendeur", "Vendeur")
+                    b.HasOne("BoutiqueEnLigne.Models.User.User", "Vendeur")
                         .WithMany()
                         .HasForeignKey("VendeurId")
                         .OnDelete(DeleteBehavior.Restrict)
